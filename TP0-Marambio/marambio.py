@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 # data = np.loadtxt('marambio_2007.dat')
 data = pd.read_csv('marambio_2007.dat', sep=' ', header='infer', engine="python")
