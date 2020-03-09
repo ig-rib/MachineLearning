@@ -16,4 +16,5 @@ for c in classes:
     training = classFiles[:splittingIndex]
     test = classFiles[splittingIndex:]
     filesPerCalss[c] = [training, test]
+
 print()
