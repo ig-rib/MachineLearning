@@ -2,9 +2,10 @@
 
 import numpy as np
 import pandas as pd
+import random
 
 # data = np.loadtxt('marambio_2007.dat')
-data = pd.read_csv('marambio_2007.dat', sep=' ', header='infer', engine="python")
+data = pd.read_csv('TP0-Marambio/marambio_2007.dat', sep=' ', header='infer', engine="python")
 
 #1 Muestre el nombre de las variables
 results = {}
@@ -38,4 +39,11 @@ print("\t{}".format("\t".join(statistics)))
 for header in data.columns.values:
     print("{}\t{}".format(header, "\t".join(map(lambda x: str(round(x, 3)), results[header]))))
 print("#7 Dividir aleatoriamente el conjunto de registros en dos, dando como dato de entrada el porcentaje de elementos")
-print("preguntar")
+ranges = list(range(len(data)))
+random.shuffle(ranges)
+percentage = float(input().rstrip("\n"))
+trainingIndices = ranges[0:int(np.floor(percentage*len(data)))]
+testIndices = ranges[int(np.floor(percentage*len(data))):]
+
+print('Training Set', data.iloc[testIndices])
+print('Test Set', data.iloc[trainingIndices])
