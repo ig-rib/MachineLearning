@@ -5,7 +5,7 @@ import pandas as pd
 import random
 
 # data = np.loadtxt('marambio_2007.dat')
-data = pd.read_csv('TP0-Marambio/marambio_2007.dat', sep=' ', header='infer', engine="python")
+data = pd.read_csv('marambio_2007.dat', sep=' ', header='infer', engine="python")
 
 #1 Muestre el nombre de las variables
 results = {}
