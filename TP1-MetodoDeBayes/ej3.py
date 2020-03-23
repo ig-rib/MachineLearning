@@ -73,7 +73,8 @@ for i in range (len(testSet)):
         for word in test:
             word = re.sub(r'[^(\w|\-)]', '', word).lower()
             if word != '' and len(word) > 3:
-                categoryProbabilities[cat] *= wordCount[cat].get(word, 1 / (totalWordCount[cat] + len(categories)))
+                #Laplace Smoothing
+                categoryProbabilities[cat] *= (( wordCount[cat].get(word, 0) + 1 )/ (totalWordCount[cat] + len(categories)))
         # P(titular | clase) * P(titular)
         # categoryProbabilities[cat] *= len(wordCount[cat].keys()) / len(data)
         categoryProbabilities[cat] *= len(wordCount[cat].keys()) / 1000
