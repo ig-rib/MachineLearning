@@ -98,15 +98,15 @@ for cat1 in categories:
         totalTrue[cat1] = totalTrue.get(cat1, 0) + confusionMatrix[cat1][cat2]
         totalClassifiedAs[cat2] = totalClassifiedAs.get(cat2, 0) + confusionMatrix[cat1][cat2]
 
-
 for cat in categories:
     # Recall = TP / (TP + FN)
     recall = truePositives[cat]/totalTrue[cat]
+    falseNegativeRate = (totalTrue[cat] - truePositives[cat]) / totalTrue[cat]
     # Precision = TP / (TP + FP)
     precision = truePositives[cat]/totalClassifiedAs[cat]
     # falsePositiveRate = FP / ( FP + TN )
     falsePositiveRate = (totalClassifiedAs[cat]-truePositives[cat]) / (len(testSet)-totalTrue[cat])
-    print('Category: %s\n\tTrue Positive Rate: %g\n\tFalse Positive Rate: %g\n\tRecall: %g\n\tPrecision: %g\n\tF1-Score: %g\n\n' % (cat, recall, falsePositiveRate, recall, precision, 2*precision*recall/(precision+recall)))
+    print('Category: %s\n\tTrue Positive Rate: %g\n\tFalse Positive Rate: %g\n\tFalse Negative Rate: %g\n\tRecall: %g\n\tPrecision: %g\n\tF1-Score: %g\n\n' % (cat, recall, falsePositiveRate, falseNegativeRate, recall, precision, 2*precision*recall/(precision+recall)))
 
 print('Correctly Classified: %d\nIncorrectly Classified: %d\n' % (correct, incorrect))
 
