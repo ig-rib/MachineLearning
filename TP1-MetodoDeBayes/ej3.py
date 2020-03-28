@@ -7,16 +7,13 @@ import numpy as np
 import re
 
 base = './Docu'
-percentage = 0.10
-
-
-
-# print()
+percentage = 0.90
 
 # data = pd.read_excel('./Noticias_argentinas.xlsx')
 data = pd.read_csv('./aa_bayes.tsv', sep='\t')
 data = data[( data['categoria'] != 'Destacadas') & (data['categoria'] != 'Noticias destacadas') & (data['categoria'] != 'NaN')].dropna()
 
+data = data.sample(frac=1).reset_index(drop=True)[1:10000]
 
 splittingIndex = int(len(data)*percentage)
 training = data[:splittingIndex]
@@ -43,10 +40,10 @@ for i in range(len(training)):
             wordCount[training.iloc[i]['categoria']][word] = wordCount[training.iloc[i]['categoria']].get(word, 0) + 1
             totalWordCount[training.iloc[i]['categoria']] += 1
 
-# Calcular frecuencias
-
+# Calcular frecuencias relativas
 for cat in wordCount.keys():
-    for word in wordCount[cat]:        
+    for word in wordCount[cat]: 
+        # Laplace smoothing para casos no nulos       
         wordCount[cat][word] = (wordCount[cat][word] + 1) / (totalWordCount[cat] + len(categories))
 
 # Matriz de Confusion
@@ -54,11 +51,13 @@ correct = 0
 incorrect = 0
 confusionMatrix = {}
 
+# Preparar la matriz de confusion
 for cat1 in sorted(categories):
     confusionMatrix[cat1] = {}
     for cat2 in sorted(categories):
         confusionMatrix[cat1][cat2] = 0
 
+# Testear el clasificador de Bayes
 for i in range (len(testSet)):
     test = testSet.iloc[i]['titular'].split(" ")
     trueCat = testSet.iloc[i]['categoria']
@@ -68,20 +67,25 @@ for i in range (len(testSet)):
     maxProb = 0
     for cat in categories:
         categoryProbabilities[cat] = 1
+    # Calcular probabilidad a posteriori por cada clase
     for cat in categories:
         # P(titular | clase)
         for word in test:
             word = re.sub(r'[^(\w|\-)]', '', word).lower()
             if word != '' and len(word) > 3:
-                #Laplace Smoothing
-                categoryProbabilities[cat] *= (( wordCount[cat].get(word, 0) + 1 )/ (totalWordCount[cat] + len(categories)))
-        # P(titular | clase) * P(titular)
-        # categoryProbabilities[cat] *= len(wordCount[cat].keys()) / len(data)
-        categoryProbabilities[cat] *= len(wordCount[cat].keys()) / 1000
+                #Laplace Smoothing para casos nulos
+                categoryProbabilities[cat] *= ( wordCount[cat].get(word, 0) + 1 / (totalWordCount[cat] + len(categories) ) )
+        # P(titular | clase) * P(clase)
+        categoryProbabilities[cat] *= len(training[training['categoria'] == cat]) / len(training)
+        # Checkear maxima probabilidad a posteriori
         if categoryProbabilities[cat] > maxProb:
             maxProb = categoryProbabilities[cat]
             predictedCat = cat
     confusionMatrix[trueCat][predictedCat] += 1
+    if trueCat == predictedCat:
+        correct += 1
+    else:
+        incorrect += 1
 
 truePositives = {}
 totalClassifiedAs = {}
