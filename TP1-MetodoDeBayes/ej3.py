@@ -7,6 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import re
 
+########################################################################
+# FUNCIONES
+########################################################################
 def getConfusionMatrix(categories, testSet, training, totalWordCount, positiveCategory=None, threshold=1):
     # Matriz de Confusion
     correct = 0
@@ -51,6 +54,30 @@ def getConfusionMatrix(categories, testSet, training, totalWordCount, positiveCa
             incorrect += 1
     return confusionMatrix, correct, incorrect
 
+def printCategoryInfo(confusionMatrix, categories):
+
+    truePositives = {}
+    totalClassifiedAs = {}
+    totalTrue = {}
+
+    for cat1 in categories:
+        truePositives[cat1] = confusionMatrix[cat1][cat1]
+        for cat2 in categories:
+            totalTrue[cat1] = totalTrue.get(cat1, 0) + confusionMatrix[cat1][cat2]
+            totalClassifiedAs[cat2] = totalClassifiedAs.get(cat2, 0) + confusionMatrix[cat1][cat2]
+
+    for cat in categories:
+        # Recall = TP / (TP + FN)
+        recall = truePositives[cat]/totalTrue[cat]
+        falseNegativeRate = (totalTrue[cat] - truePositives[cat]) / totalTrue[cat]
+        # Precision = TP / (TP + FP)
+        precision = truePositives[cat]/totalClassifiedAs[cat]
+        # falsePositiveRate = FP / ( FP + TN )
+        falsePositiveRate = (totalClassifiedAs[cat]-truePositives[cat]) / (len(testSet)-totalTrue[cat])
+        print('Category: %s\n\tTrue Positive Rate: %g\n\tFalse Positive Rate: %g\n\tFalse Negative Rate: %g\n\tRecall: %g\n\tPrecision: %g\n\tF1-Score: %g\n\n' % (cat, recall, falsePositiveRate, falseNegativeRate, recall, precision, 2*precision*recall/(precision+recall)))
+
+########################################################################
+
 base = './Docu'
 percentage = 0.50
 
@@ -63,6 +90,10 @@ data = data.sample(frac=1).reset_index(drop=True)[1:10000]
 splittingIndex = int(len(data)*percentage)
 training = data[:splittingIndex]
 testSet = data[splittingIndex:]
+
+########################################################################
+# CLASIFICADOR DE BAYES
+########################################################################
 
 # Preparar las estructuras de datos
 wordCount = {}
@@ -91,37 +122,24 @@ for cat in wordCount.keys():
         # Laplace smoothing para casos no nulos       
         wordCount[cat][word] = (wordCount[cat][word] + 1) / (totalWordCount[cat] + len(categories))
 
-# Matriz de Confusion
+########################################################################
+
+########################################################################
+# MATRIZ DE CONFUSION Y OTRAS METRICAS
+########################################################################
+
 confusionMatrix, correct, incorrect = getConfusionMatrix(categories, testSet, training, totalWordCount)
 print(confusionMatrix)
-
-def printCategoryInfo(confusionMatrix, categories):
-
-    truePositives = {}
-    totalClassifiedAs = {}
-    totalTrue = {}
-
-    for cat1 in categories:
-        truePositives[cat1] = confusionMatrix[cat1][cat1]
-        for cat2 in categories:
-            totalTrue[cat1] = totalTrue.get(cat1, 0) + confusionMatrix[cat1][cat2]
-            totalClassifiedAs[cat2] = totalClassifiedAs.get(cat2, 0) + confusionMatrix[cat1][cat2]
-
-    for cat in categories:
-        # Recall = TP / (TP + FN)
-        recall = truePositives[cat]/totalTrue[cat]
-        falseNegativeRate = (totalTrue[cat] - truePositives[cat]) / totalTrue[cat]
-        # Precision = TP / (TP + FP)
-        precision = truePositives[cat]/totalClassifiedAs[cat]
-        # falsePositiveRate = FP / ( FP + TN )
-        falsePositiveRate = (totalClassifiedAs[cat]-truePositives[cat]) / (len(testSet)-totalTrue[cat])
-        print('Category: %s\n\tTrue Positive Rate: %g\n\tFalse Positive Rate: %g\n\tFalse Negative Rate: %g\n\tRecall: %g\n\tPrecision: %g\n\tF1-Score: %g\n\n' % (cat, recall, falsePositiveRate, falseNegativeRate, recall, precision, 2*precision*recall/(precision+recall)))
 
 plt.matshow(confusionMatrix)
 plt.show()
 
 printCategoryInfo(confusionMatrix, categories)
 print('Correctly Classified: %d\nIncorrectly Classified: %d\n' % (correct, incorrect))
+
+########################################################################
+# CURVA ROC
+########################################################################
 
 positiveCat = categories[0]
 ROCPoints = []
