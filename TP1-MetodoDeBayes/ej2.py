@@ -4,9 +4,8 @@ import pandas as pd
 
 input = [1, 0, 1, 1, 0]
 
-excelFile = pd.ExcelFile('./TP1-MetodoDeBayes/PreferenciasBritanicos.xlsx')
+excelFile = pd.ExcelFile('./PreferenciasBritanicos.xlsx')
 data = excelFile.parse(excelFile.sheet_names[0])
-print(data)
 # initialize D
 D = {}
 keys = list(data.keys())
@@ -21,6 +20,7 @@ for i in range(len(data)):
     D[group]["total"] = D[group].get("total", 0) + 1
 for group in D.keys():
     for key in keys:
+        # Laplace Smoothing when calculating relative frequencies
         D[group][key] = (D[group][key]+1)/(D[group]["total"]+len(D.keys()))
 inputHash = {}
 for i in range(len(input)):
@@ -28,6 +28,9 @@ for i in range(len(input)):
 
 max = 0
 maxNat = ''
+
+aPosterioriProbs = {}
+
 for group in D.keys():
     prob = 1
     for key in keys:
@@ -36,7 +39,10 @@ for group in D.keys():
         else:
             prob *= (1-D[group][key])
     prob *= (len(D[group])/len(data))
+    aPosterioriProbs[group] = prob
     if prob > max:
         max = prob
         maxNat = group
-print(maxNat, max)
+print('\nVector de entrada ', input, ' clasificado como ', maxNat)
+for nat in aPosterioriProbs.keys():
+    print('Probabilidad a posteriori (sin denominador) para %s: ' % (nat), aPosterioriProbs[nat])
