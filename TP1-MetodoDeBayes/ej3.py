@@ -76,7 +76,12 @@ def printCategoryInfo(confusionMatrix, categories):
         falsePositiveRate = (totalClassifiedAs[cat]-truePositives[cat]) / (len(testSet)-totalTrue[cat])
         print('Category: %s\n\tTrue Positive Rate: %g\n\tFalse Positive Rate: %g\n\tFalse Negative Rate: %g\n\tRecall: %g\n\tPrecision: %g\n\tF1-Score: %g\n\n' % (cat, recall, falsePositiveRate, falseNegativeRate, recall, precision, 2*precision*recall/(precision+recall)))
 
+
+
 ########################################################################
+# INICIALIZACION
+########################################################################
+
 
 base = './Docu'
 percentage = 0.50
@@ -85,7 +90,7 @@ percentage = 0.50
 data = pd.read_csv('./aa_bayes.tsv', sep='\t')
 data = data[( data['categoria'] != 'Destacadas') & (data['categoria'] != 'Noticias destacadas') & (data['categoria'] != 'NaN')].dropna()
 
-data = data.sample(frac=1).reset_index(drop=True)[1:10000]
+data = data.sample(frac=1).reset_index(drop=True)[1:5000]
 
 splittingIndex = int(len(data)*percentage)
 training = data[:splittingIndex]
@@ -98,7 +103,7 @@ testSet = data[splittingIndex:]
 # Preparar las estructuras de datos
 wordCount = {}
 totalWordCount = {}
-categories = [x for x in data.categoria.unique() if x is not np.nan]
+categories = sorted([x for x in data.categoria.unique() if x is not np.nan])
 for cat in categories:
     wordCount[cat] = {}
     totalWordCount[cat] = 0
@@ -131,7 +136,26 @@ for cat in wordCount.keys():
 confusionMatrix, correct, incorrect = getConfusionMatrix(categories, testSet, training, totalWordCount)
 print(confusionMatrix)
 
-plt.matshow(confusionMatrix)
+plotMat = []
+
+for cat1 in categories:
+    row = []
+    for cat2 in categories:
+        row.append(confusionMatrix[cat1][cat2])
+    plotMat.append(row)
+
+fig, ax = plt.subplots()
+ax.matshow(plotMat)
+
+for (i, j), z in np.ndenumerate(plotMat):
+    ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
+            bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.1'))
+
+plotCategories = ['']
+plotCategories.extend(categories)
+ax.set_xticklabels(sorted(plotCategories))
+ax.set_yticklabels(sorted(plotCategories))
+plt.title('Matriz de Confusion')
 plt.show()
 
 printCategoryInfo(confusionMatrix, categories)
@@ -143,7 +167,8 @@ print('Correctly Classified: %d\nIncorrectly Classified: %d\n' % (correct, incor
 
 positiveCat = categories[0]
 ROCPoints = []
-newTestSet = testSet[1:1000]
+# evaluo con un conjunto del 10% del tamanio del testSet
+newTestSet = testSet[1:len(testSet)//10]
 for i in range(1,10):
     confusionMatrix, _, _ = getConfusionMatrix(categories, newTestSet, training, totalWordCount, positiveCat, i)
     truePositives = confusionMatrix[positiveCat][positiveCat]
@@ -158,4 +183,7 @@ for i in range(1,10):
 
     # print(confusionMatrix)
 plt.plot([x[0] for x in ROCPoints], [x[1] for x in ROCPoints])
+plt.title('Curva ROC')
+plt.xlabel('FPR')
+plt.ylabel('TPR')
 plt.show()
