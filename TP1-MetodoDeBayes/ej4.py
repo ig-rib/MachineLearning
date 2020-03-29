@@ -1,5 +1,4 @@
 import pandas as pd
-from node import Node
 
 data = pd.read_csv('binary.csv', sep=',')
 
@@ -9,10 +8,6 @@ children = {'gre': ['admit'], 'gpa': ['admit'], 'admit': [], 'rank': ['gpa', 'gr
 nodes = []
 
 T = {}
-
-for cl in classes:
-    nodes.append(Node(parents[cl], children[cl], cl))
-    T[cl] = {}
 
 def mapToCategory(x, limit):
     if x >= limit:
@@ -34,8 +29,6 @@ def conditionalProbability(dataTable, target, targetValue, conditions, condition
 pA = {}
 for i in range(1, 5):
     pA[i] = len(data[data['rank'] == i])/len(data)
-print(data['gpa'])
-print(conditionalProbability(data, 'admit', 0, ['gre'], [1]))
 
 print('a) P(admitido=0 | rango=1) = %g' % (conditionalProbability(data, 'admit', 0, ['rank'], [1])))
 print('b) P(admitido=1 | rank=2, gre=450, gpa=3.5) = %g' % (conditionalProbability(data, 'admit', 1, ['rank', 'gre', 'gpa'], [2, 0, 1])))

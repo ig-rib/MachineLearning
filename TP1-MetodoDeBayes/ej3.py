@@ -86,8 +86,8 @@ def printCategoryInfo(confusionMatrix, categories):
 base = './Docu'
 percentage = 0.50
 
-# data = pd.read_excel('./Noticias_argentinas.xlsx')
-data = pd.read_csv('./aa_bayes.tsv', sep='\t')
+data = pd.read_excel('./Noticias_argentinas.xlsx')
+# data = pd.read_csv('./aa_bayes.tsv', sep='\t')
 data = data[( data['categoria'] != 'Destacadas') & (data['categoria'] != 'Noticias destacadas') & (data['categoria'] != 'NaN')].dropna()
 
 data = data.sample(frac=1).reset_index(drop=True)[1:5000]
