@@ -183,6 +183,10 @@ for i in range(1,10):
 
     # print(confusionMatrix)
 plt.plot([x[0] for x in ROCPoints], [x[1] for x in ROCPoints])
+auc = 0
+for i in range(len(ROCPoints)-1):
+    auc += max(ROCPoints[i+1][1], ROCPoints[i][1]) * np.abs(ROCPoints[i+1][0]-ROCPoints[i][0]) / 2
+print('AUC: ', auc)
 plt.title('Curva ROC')
 plt.xlabel('FPR')
 plt.ylabel('TPR')
