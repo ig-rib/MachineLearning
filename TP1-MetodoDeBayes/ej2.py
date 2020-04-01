@@ -38,7 +38,7 @@ for group in D.keys():
             prob *= D[group][key]
         else:
             prob *= (1-D[group][key])
-    prob *= (len(D[group])/len(data))
+    prob *= (D[group]["total"]/len(data))
     aPosterioriProbs[group] = prob
     if prob > max:
         max = prob
