@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import re
 import math
-from utils import regularGain, entropy, specificEntropy, findMostFrequentObjectiveValue, giniGain, classifyRow
+from utils import regularGain, entropy, specificEntropy, findMostFrequentObjectiveValue, giniGain, classifyRow, randomForestClassifyRow
 from treeNode import Node
 from copy import copy
 import random as rd
@@ -119,14 +119,53 @@ trees
 
 shannonCorrect = 0
 giniCorrect = 0
+rfCorrect = 0
 
 for i in range(len(testSet)):
     row = testSet.iloc[i]
-
     print(row)
+
     shannonCorrect += 1 - np.abs(classifyRow(row, shannonTree) - row['Survived'])
     giniCorrect += 1 - np.abs(classifyRow(row, giniTree) - row['Survived'])
+    rfCorrect += 1 - np.abs(randomForestClassifyRow(row, trees) - row['Survived'])
+
+def classifyTestSet(testSet, structure, classifyFunction):
+    TPs = 0
+    TNs = 0
+    for i in range(len(testSet)):
+        row = testSet.iloc[i]
+        result = classifyFunction(row, structure)
+        if result == 0 and 0 == row[obj]:
+            TNs += 1
+        elif result == 1 and 1 == row[obj]:
+            TPs += 1
+    return [TPs, TNs]
+
+stats = {}
+
+stats['Shannon'] = classifyTestSet(testSet, shannonTree, classifyRow)
+stats['Gini'] =  classifyTestSet(testSet, giniTree, classifyRow)
+stats['Random Forest'] = classifyTestSet(testSet, trees, randomForestClassifyRow)
+
+def plotConfusionMatrix(testSet, TPs, TNs, objective, title, figNo):
+    matrix = []
+    matrix.append([TPs, len(testSet[testSet[objective] == 1]) - TPs])
+    matrix.append([len(testSet[testSet[objective] == 0]) - TNs, TNs])
+    print(matrix)
+    fig, ax = plt.subplots()
+    ax.matshow(matrix)
+    for (i, j), z in np.ndenumerate(matrix):
+        ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.1'))
+    ax.set_xticklabels(['', 'TPs', 'TNs'])
+    ax.set_yticklabels(['', 'TPs', 'TNs'])
+    plt.title(title)
+    plt.show()
+
+for i, key in enumerate(stats.keys()):
+    plotConfusionMatrix(testSet, stats[key][0], stats[key][1], obj, key, i)
 
 print('Shannon', shannonCorrect/len(testSet))
 print('Gini', giniCorrect/len(testSet))
-    
+print('Random Forest ', rfCorrect/len(testSet))
+
