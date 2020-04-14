@@ -17,5 +17,5 @@ for i in range(len(data)):
 		word_count += data.iloc[i]["wordcount"]
 		count+=1
 average = word_count/count
-print("b) Los reviews valuados con 1 estrella tienen en promedio " + str(average) + " palabras")
+print("a) Los reviews valorados con 1 estrella tienen en promedio " + str(average) + " palabras")
 
