@@ -7,8 +7,9 @@ import re
 import math
 from utils import regularGain, entropy, specificEntropy, findMostFrequentObjectiveValue, giniGain, classifyRow, randomForestClassifyRow
 from treeNode import Node
-from copy import copy
+from copy import copy, deepcopy
 import random as rd
+from collections import deque
 
 percentage = .5
 
@@ -44,6 +45,7 @@ def generateTree(training, gain, objectiveValues, attributes = None):
     else:
         remainingAttributes = copy(attributes)
     root = Node(None)
+    root.height = 0
     F = [root]
     E = [root]
     while len(F) > 0:
@@ -63,6 +65,7 @@ def generateTree(training, gain, objectiveValues, attributes = None):
             # print(auxData)
             for v in attValues:
                 child = Node(curr)
+                child.height = curr.height + 1
                 child.filters = copy(curr.filters)
                 child.filters.append([currAttName, v])
                 childAuxData = auxData[auxData[currAttName] == v]
@@ -95,11 +98,16 @@ def generateTree(training, gain, objectiveValues, attributes = None):
             curr.value = findMostFrequentObjectiveValue(auxData, obj, objectiveValues)
     return root
 
+## b) Árbol de decisión con entropía de Shannon
+
 shannonTree = generateTree(training, regularGain, objectiveValues)
+
+## c) Árbol de decisión con coeficiente de Gini
+
 giniTree = generateTree(training, giniGain, objectiveValues)
 print()
 
-## Random Forest
+## d) Random Forest
 ## Se toman muestras del conjunto de training
 # que tengan el mismo tamaño que éste.
 
@@ -132,20 +140,31 @@ for i in range(len(testSet)):
 def classifyTestSet(testSet, structure, classifyFunction):
     TPs = 0
     TNs = 0
+    totalClassifiedAsNeg = 0
+    totalClassifiedAsPos = 0
     for i in range(len(testSet)):
         row = testSet.iloc[i]
         result = classifyFunction(row, structure)
-        if result == 0 and 0 == row[obj]:
-            TNs += 1
-        elif result == 1 and 1 == row[obj]:
-            TPs += 1
-    return [TPs, TNs]
+        if result == 0:
+            if 0 == row[obj]:
+                TNs += 1
+            totalClassifiedAsNeg+=1
+        elif result == 1:
+            if 1 == row[obj]:
+                TPs += 1
+            totalClassifiedAsPos+=1
+        if totalClassifiedAsPos != 0:
+            precision = TPs/totalClassifiedAsPos
+        else: precision = 0
+    return [TPs, TNs, totalClassifiedAsPos, totalClassifiedAsNeg, precision]
 
 stats = {}
 
 stats['Shannon'] = classifyTestSet(testSet, shannonTree, classifyRow)
 stats['Gini'] =  classifyTestSet(testSet, giniTree, classifyRow)
 stats['Random Forest'] = classifyTestSet(testSet, trees, randomForestClassifyRow)
+
+## e) Matrices de confusión
 
 def plotConfusionMatrix(testSet, TPs, TNs, objective, title, figNo):
     matrix = []
@@ -164,6 +183,18 @@ def plotConfusionMatrix(testSet, TPs, TNs, objective, title, figNo):
 
 for i, key in enumerate(stats.keys()):
     plotConfusionMatrix(testSet, stats[key][0], stats[key][1], obj, key, i)
+
+## f) Precisión vs #Nodos
+
+shannonTrees = []
+giniTrees = []
+
+for i in range(1, len(attributeNames) + 1):
+    for j in range(i+1):
+        shannonTrees.append(generateTree(training, regularGain, objectiveValues, rd.sample(attributeNames, i)))
+        giniTrees.append(generateTree(training, giniGain, objectiveValues, rd.sample(attributeNames, i)))
+    
+
 
 print('Shannon', shannonCorrect/len(testSet))
 print('Gini', giniCorrect/len(testSet))
