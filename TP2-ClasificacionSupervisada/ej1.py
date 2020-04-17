@@ -1,3 +1,5 @@
+#!/bin/python3
+
 import os
 import random
 import pandas as pd
@@ -6,6 +8,7 @@ import matplotlib.pyplot as plt
 import re
 import math
 from utils import regularGain, entropy, specificEntropy, findMostFrequentObjectiveValue, giniGain, classifyRow, randomForestClassifyRow
+from plotUtils import plotResults
 from treeNode import Node
 from copy import copy, deepcopy
 import random as rd
@@ -193,7 +196,21 @@ for i in range(1, len(attributeNames) + 1):
     for j in range(i+1):
         shannonTrees.append(generateTree(training, regularGain, objectiveValues, rd.sample(attributeNames, i)))
         giniTrees.append(generateTree(training, giniGain, objectiveValues, rd.sample(attributeNames, i)))
-    
+
+a = [ len(x.getNodesAsList()) for x in shannonTrees ]
+b = [ len(x.getNodesAsList()) for x in giniTrees ]
+
+## Test against training set
+
+shannonTrainingResults = [ (len(x.getNodesAsList()), classifyTestSet(training, x, classifyRow)[4]) for x in shannonTrees ]
+shannonTestResults = [ (len(x.getNodesAsList()), classifyTestSet(testSet, x, classifyRow)[4]) for x in shannonTrees ]
+
+plotResults(shannonTrainingResults, shannonTestResults, 'Shannon Precision', 1)
+
+giniTrainingResults = [ (len(x.getNodesAsList()), classifyTestSet(training, x, classifyRow)[4]) for x in giniTrees ]
+giniTestResults = [ (len(x.getNodesAsList()), classifyTestSet(testSet, x, classifyRow)[4]) for x in giniTrees ]
+
+plotResults(giniTrainingResults, giniTestResults, 'Gini Precision', 1)
 
 
 print('Shannon', shannonCorrect/len(testSet))
