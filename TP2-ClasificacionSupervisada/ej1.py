@@ -179,8 +179,8 @@ def plotConfusionMatrix(testSet, TPs, TNs, objective, title, figNo):
     for (i, j), z in np.ndenumerate(matrix):
         ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
                 bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.1'))
-    ax.set_xticklabels(['', 'TPs', 'TNs'])
-    ax.set_yticklabels(['', 'TPs', 'TNs'])
+    ax.set_xticklabels(['', 'Positives', 'Negatives'])
+    ax.set_yticklabels(['', 'Positives', 'Negatives'])
     plt.title(title)
     plt.show()
 
