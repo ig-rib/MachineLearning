@@ -66,10 +66,28 @@ def get_neighbors_weighted(train, test_row, num_neighbors):
 		neighbors.append(distances[i][:])
 	return neighbors
 
+# Forma 1 
+# def predict_classification(train, test_row, num_neighbors):
+# 	neighbors = get_neighbors(train, test_row, num_neighbors)
+# 	output_values = [row[-2] for row in neighbors]
+# 	prediction = max(output_values, key=output_values.count)
+# 	return prediction
+
+# Forma 2 
 def predict_classification(train, test_row, num_neighbors):
 	neighbors = get_neighbors(train, test_row, num_neighbors)
 	output_values = [row[-2] for row in neighbors]
-	prediction = max(output_values, key=output_values.count)
+	star_prediction = [0, 0 ,0 ,0 ,0]
+
+	for i in range(len(neighbors)):
+		star = neighbors[i][5] 
+		star_prediction[star-1]+=1
+
+	max_rating = max(star_prediction)
+	print("star_prediction index: " + str(star_prediction))
+	for i in range(len(star_prediction)):
+		if(star_prediction[i] == max_rating):
+			prediction = i + 1
 	return prediction
 
 def predict_weighted_classification(train, test_row, num_neighbors):
@@ -105,9 +123,11 @@ def predict_weighted_classification(train, test_row, num_neighbors):
 # 5. Predigo, con max sobre rating 
 
 num_neighbors = 5
+
 # puede ser un numero random tomo el 5 porque si, magic number
 vec_analizar = testSet.iloc[5][:]
 label = predict_classification(training, vec_analizar, num_neighbors)
+print("KNN")
 print('Data=%s, Predicted: %s' % (vec_analizar, label))
 print('--------------------------------------------------------')
 
@@ -121,6 +141,7 @@ print('--------------------------------------------------------')
 
 
 label = predict_weighted_classification(training, vec_analizar, num_neighbors)
+print("Weighted KNN")
 print('Data=%s, Predicted: %s' % (vec_analizar, label))
 print('--------------------------------------------------------')
 
