@@ -3,12 +3,13 @@
 import pandas as pd
 from sklearn import svm
 import random as rd
+import numpy as np
 
 data = pd.read_excel('TP3-SVM/data/acath.xls')
 data = data.sample(frac=1)
 choleste = 'choleste'
 # data[choleste] = data[choleste].fillna(data[choleste].mean())
-data.apply(lambda x: x.fillna(x.mean()),axis=0)
+data = data.apply(lambda x: x.fillna(x.mean()),axis=0)
 # a)
 
 percentage = 0.5
@@ -33,4 +34,18 @@ testVectors = testSet.loc[:, testSet.columns != objective]
 testYs = testSet[objective]
 
 predicted = suppVectorMachine.predict(testVectors)
-predicted
+totalClassifiedAsPos = 0
+totalClassifiedAsNeg = 0
+TPs = 0
+TNs = 0
+for i in range(len(testVectors)):
+    predictedValue = suppVectorMachine.predict(np.array(testVectors.iloc[i]).reshape(1, -1))[0]
+    actualValue = testYs.iloc[i]
+    if predictedValue == 0: 
+        totalClassifiedAsPos += 1
+        if predictedValue == actualValue:
+            TPs += 1
+    else: 
+        totalClassifiedAsNeg += 1
+        if predictedValue == actualValue:
+            TNs += 1
