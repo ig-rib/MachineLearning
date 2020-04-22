@@ -14,9 +14,9 @@ from copy import copy, deepcopy
 import random as rd
 from collections import deque
 
-percentage = .5
+percentage = .75
 
-data = pd.read_csv('./TP2-ClasificacionSupervisada/titanic.csv', sep='\t')
+data = pd.read_csv('./titanic.csv', sep='\t')
 obj = 'Survived'
 attributeNames = ['Pclass', 'Sex', 'Age']
 data = data[['Survived', 'Pclass', 'Sex', 'Age']]
@@ -49,10 +49,10 @@ def generateTree(training, gain, objectiveValues, attributes = None):
         remainingAttributes = copy(attributes)
     root = Node(None)
     root.height = 0
-    F = [root]
+    F = deque([root])
     E = [root]
     while len(F) > 0:
-        curr = F.pop()
+        curr = F.popleft()
         
         auxData = training
         for filter in curr.filters:
@@ -200,17 +200,37 @@ for i in range(1, len(attributeNames) + 1):
 a = [ len(x.getNodesAsList()) for x in shannonTrees ]
 b = [ len(x.getNodesAsList()) for x in giniTrees ]
 
-## Test against training set
+# Test against training set
 
 shannonTrainingResults = [ (len(x.getNodesAsList()), classifyTestSet(training, x, classifyRow)[4]) for x in shannonTrees ]
 shannonTestResults = [ (len(x.getNodesAsList()), classifyTestSet(testSet, x, classifyRow)[4]) for x in shannonTrees ]
 
-plotResults(shannonTrainingResults, shannonTestResults, 'Shannon Precision', 1)
+plotResults(sorted(shannonTrainingResults, key=lambda x: x[0]), sorted(shannonTestResults, key=lambda x: x[0]), 'Shannon Precision', 1, '--')
 
 giniTrainingResults = [ (len(x.getNodesAsList()), classifyTestSet(training, x, classifyRow)[4]) for x in giniTrees ]
 giniTestResults = [ (len(x.getNodesAsList()), classifyTestSet(testSet, x, classifyRow)[4]) for x in giniTrees ]
 
-plotResults(giniTrainingResults, giniTestResults, 'Gini Precision', 1)
+plotResults(sorted(giniTrainingResults, key=lambda x: x[0]), sorted(giniTestResults, key=lambda x: x[0]), 'Gini Precision', 1, '--')
+
+shannonTrees = []
+giniTrees = []
+
+shannonClone = deepcopy(shannonTree)
+giniClone = deepcopy(giniTree)
+
+for j in range(2, 10):
+    shannonTrees.append(deepcopy(shannonClone).toNOrLessNodes(j))
+    giniTrees.append(deepcopy(giniClone).toNOrLessNodes(j))
+
+shannonTrainingResults = [ (len(x.getNodesAsList()), classifyTestSet(training, x, classifyRow)[4]) for x in shannonTrees ]
+shannonTestResults = [ (len(x.getNodesAsList()), classifyTestSet(testSet, x, classifyRow)[4]) for x in shannonTrees ]
+
+plotResults(sorted(shannonTrainingResults, key=lambda x: x[0]), sorted(shannonTestResults, key=lambda x: x[0]), 'Shannon Precision', 1, '--')
+
+giniTrainingResults = [ (len(x.getNodesAsList()), classifyTestSet(training, x, classifyRow)[4]) for x in giniTrees ]
+giniTestResults = [ (len(x.getNodesAsList()), classifyTestSet(testSet, x, classifyRow)[4]) for x in giniTrees ]
+
+plotResults(sorted(giniTrainingResults, key=lambda x: x[0]), sorted(giniTestResults, key=lambda x: x[0]), 'Gini Precision', 1, '--')
 
 
 print('Shannon', shannonCorrect/len(testSet))

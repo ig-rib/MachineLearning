@@ -31,6 +31,7 @@ class Node:
                 nodes.remove(child)
             curr.children = {}
             curr.value = max(D, key=lambda x: D[x])
+        return self
     def nodeCount(self):
         if len(self.children.values()) == 0:
             return 1
