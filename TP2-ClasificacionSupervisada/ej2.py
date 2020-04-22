@@ -16,7 +16,7 @@ data.replace(['negative', 'positive'], [0, 1], inplace=True)
 
 
 # increasing percetage, increases training 
-percentage = 0.4
+percentage = 0.6
 splittingIndex = int(len(data)*percentage)
 training = data[:splittingIndex]
 testSet = data[splittingIndex:]
