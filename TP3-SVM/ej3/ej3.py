@@ -3,7 +3,7 @@
 import os
 from scipy.misc import imread
 
-dataPath = 'TP3-SVM/data/'
+dataPath = 'data/'
 
 for image in [ f for f in os.listdir(dataPath) if '.jpg' in f ]:
     imArray = imread(dataPath + image)

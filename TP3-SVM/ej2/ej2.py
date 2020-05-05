@@ -6,7 +6,7 @@ import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
 
-data = pd.read_excel('TP3-SVM/data/acath.xls')
+data = pd.read_excel('data/acath.xls')
 data = data.sample(frac=1)
 choleste = 'choleste'
 # data[choleste] = data[choleste].fillna(data[choleste].mean())
@@ -28,28 +28,44 @@ trainingYs = training[objective]
 
 ## possible kernel values are 'linear', 'poly', 'rbf', 'sigmoid', 'precomputed'
 
-suppVectorMachine = svm.SVC(C = 1.0, kernel = 'linear')
+suppVectorMachine = svm.SVC(C = 1000, kernel = 'poly')
 suppVectorMachine.fit(trainingVectors, trainingYs)
 
 testVectors = testSet.loc[:, testSet.columns != objective]
 testYs = testSet[objective]
 
-predicted = suppVectorMachine.predict(testVectors)
-totalClassifiedAsPos = 0
-totalClassifiedAsNeg = 0
-TPs = 0
-TNs = 0
-for i in range(len(testVectors)):
-    predictedValue = suppVectorMachine.predict(np.array(testVectors.iloc[i]).reshape(1, -1))[0]
-    actualValue = testYs.iloc[i]
-    if predictedValue == 1: 
-        totalClassifiedAsPos += 1
-        if predictedValue == actualValue:
-            TPs += 1
-    elif predictedValue == 0: 
-        totalClassifiedAsNeg += 1
-        if predictedValue == actualValue:
-            TNs += 1
+# correct = 0
+# PredYs = suppVectorMachine.predict(trainingVectors)
+# for i in range(len(trainingYs)):
+#     print(PredYs[i], trainingYs.iloc[i])
+#     correct+= 1 if PredYs[i] == trainingYs.iloc[i] else 0
+# print(correct/len(trainingVectors))
+
+## TODO extract method
+
+def testSvm(svm, testVectors, testYs):
+    predYs = svm.predict(testVectors)
+    totalClassifiedAsPos = 0
+    totalClassifiedAsNeg = 0
+    TPs = 0
+    TNs = 0
+    correct = 0
+    for i in range(len(testVectors)):
+        predictedValue = predYs[i]
+        actualValue = testYs.iloc[i]
+        if predictedValue == 1: 
+            totalClassifiedAsPos += 1
+            if predictedValue == actualValue:
+                TPs += 1
+        elif predictedValue == 0: 
+            totalClassifiedAsNeg += 1
+            if predictedValue == actualValue:
+                TNs += 1
+        correct+= 1 if predYs[i] == testYs.iloc[i] else 0
+    print(correct/len(testVectors))
+    return TPs, TNs, totalClassifiedAsPos, totalClassifiedAsNeg, correct
+
+TPs, TNs, _,_,_ = testSvm(suppVectorMachine, testVectors, testYs)
 
 def plotConfusionMatrix(testSet, TPs, TNs, title, figNo):
     matrix = []
@@ -69,3 +85,14 @@ def plotConfusionMatrix(testSet, TPs, TNs, title, figNo):
 plotConfusionMatrix(testYs, TPs, TNs, 'Confusion Matrix for SVM', 1)
 
 # c)
+
+svmHashPrecisions = {}
+
+for C in [1, 10, 100, 1000]:
+    for kernel in ['linear', 'poly', 'rbf', 'sigmoid']:
+        suppVectorMachine = svm.SVC(C = C, kernel = 'poly')
+        suppVectorMachine.fit(trainingVectors, trainingYs)
+        TPs, TNs, totalClassifiedAsPos, totalClassifiedAsNeg, correct = testSvm(suppVectorMachine, testVectors, testYs)
+        svmHashPrecisions[(C, kernel)] = TPs / totalClassifiedAsPos
+
+print(max(svmHashPrecisions.keys(), key=lambda x: svmHashPrecisions[x]))
