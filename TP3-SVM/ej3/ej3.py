@@ -7,7 +7,6 @@ import utils as u
 import pandas as pd
 from sklearn.svm import SVC
 import numpy as np
-from PIL import Image
 
 # a) Construir el conjunto de datos
 
@@ -40,12 +39,13 @@ testY = test['Class']
 
 svmHashPrecisions = {}
 
-for C in [10]:
+for C in [1]:
     for kernel in ['linear', 'poly', 'rbf', 'sigmoid']:
         suppVectorMachine = SVC(C = C, kernel = kernel)
         suppVectorMachine.fit(trainingX, trainingY)
         accuracy, confusionMatrix = u.testSvm(suppVectorMachine, testX, testY)
         print(confusionMatrix)
+        u.showConfusionMatrix(confusionMatrix, confusionMatrix.keys(), f'Confusion Matrix for {kernel}, C={C}')
         svmHashPrecisions[(C, kernel)] = accuracy
         print(C, kernel, accuracy)
 
@@ -66,16 +66,15 @@ classIdentifiers = {
 
 bestSVM.fit(trainingX, trainingY)
 
-def plotImage(imageData):
+def plotImage(imageData, w, h):
     imageMapping = bestSVM.predict(imageData)
-    w, h = 1140, 760 # red patch in upper left
     imageMapping.reshape(h, w)
     pixels = np.array([ classIdentifiers[x] for x in imageMapping ]).reshape(h, w, 3)
     plt.imshow(pixels)
     plt.show()
 
-plotImage(testImageData)
+# plotImage(testImageData, 1140, 760)
 
 # f) Con el mejor clasificar todos los pixeles de la otra imagen
 
-plotImage(otherImageData)
+plotImage(otherImageData, 1200, 800)

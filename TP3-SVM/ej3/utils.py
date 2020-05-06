@@ -3,6 +3,8 @@
 import pandas as pd
 import matplotlib.image as img
 from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
+import numpy as np
 
 def loadImage(filename, percentage = 0.1):
     data = pd.DataFrame(img.imread(filename).reshape(-1, 3))
@@ -30,3 +32,26 @@ def testSvm(svm, testVectors, testYs):
     accuracy = correct/len(testVectors)
     return accuracy, confusionMatrix
 
+def showConfusionMatrix(cM, cats, title):
+    
+    plotMat = []
+
+    for cat1 in cats:
+        row = []
+        for cat2 in cats:
+            row.append(cM[cat1][cat2])
+        plotMat.append(row)
+
+    fig, ax = plt.subplots()
+    ax.matshow(plotMat)
+
+    for (i, j), z in np.ndenumerate(plotMat):
+        ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.1'))
+
+    plotCategories = ['']
+    plotCategories.extend(cats)
+    ax.set_xticklabels(plotCategories)
+    ax.set_yticklabels(plotCategories)
+    plt.title(title)
+    plt.show()
