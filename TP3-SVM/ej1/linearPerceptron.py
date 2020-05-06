@@ -11,7 +11,7 @@ class SimpleStepPerceptron(Perceptron):
     def __init__(self, dimension, r, w0 = 0.1):
         super().__init__(dimension, r, w0)
     
-    def train(self, X, r = None, minError = 1e-3, epochs = 1000):
+    def train(self, X, r = None, minError = 1e-3, epochs = 100):
         if r != None:
             self.r = r
         error = sys.maxsize

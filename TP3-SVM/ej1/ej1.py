@@ -20,8 +20,8 @@ D = [ [p, mapToClass(p)] for p in points]
 
 from linearPerceptron import SimpleStepPerceptron
 
-perceptron = SimpleStepPerceptron(2, 0.5, -.25)
-perceptron.train(D)
+perceptron = SimpleStepPerceptron(len(D[0][0]), 0.05, .25)
+perceptron.train(D, epochs=100)
 
 points = []
 for i in range(1000):
@@ -45,12 +45,13 @@ print(correct/len(D2))
 x = np.linspace(0, 5, 100)
 slope = -perceptron.w[0]/perceptron.w[1]
 intercept = -perceptron.w0/perceptron.w[1]
+print(f'{slope}*x + {intercept}')
 y = [ xi*slope + intercept for xi in x ]
 plt.plot(x, y)
-red = [x[0] for x in D if x[1] == -1 and perceptron.classify(x[0]) == x[1]]
-blue = [x[0] for x in D if x[1] == 1 and perceptron.classify(x[0]) == x[1]]
-green = [x[0] for x in D if x[1] == -1 and perceptron.classify(x[0]) != x[1]]
-orange = [x[0] for x in D if x[1] == 1 and perceptron.classify(x[0]) != x[1]]
+red = [x[0] for x in D2 if x[1] == -1 and perceptron.classify(x[0]) == x[1]]
+blue = [x[0] for x in D2 if x[1] == 1 and perceptron.classify(x[0]) == x[1]]
+green = [x[0] for x in D2 if x[1] == -1 and perceptron.classify(x[0]) != x[1]]
+orange = [x[0] for x in D2 if x[1] == 1 and perceptron.classify(x[0]) != x[1]]
 plt.scatter([r[0] for r in red], [r[1] for r in red], color='red')
 plt.scatter([b[0] for b in blue], [b[1] for b in blue], color='blue')
 plt.scatter([b[0] for b in green], [b[1] for b in green], color='green')
