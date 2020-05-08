@@ -3,9 +3,10 @@
 import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 points = []
-for i in range(100):
+for i in range(1000):
     points.append((rd.random()*5, rd.random()*5))
 
 def f(x):
@@ -20,11 +21,11 @@ D = [ [p, mapToClass(p)] for p in points]
 
 from linearPerceptron import SimpleStepPerceptron
 
-perceptron = SimpleStepPerceptron(len(D[0][0]), 0.05, .25)
-perceptron.train(D, epochs=100)
+perceptron = SimpleStepPerceptron(len(D[0][0]), 0.005, .25)
+perceptron.train(D, minError=0.0, epochs=sys.maxsize)
 
 points = []
-for i in range(1000):
+for i in range(10):
     points.append((rd.random()*5, rd.random()*5))
 
 D2 = [ [p, mapToClass(p)] for p in points]
@@ -43,18 +44,19 @@ print(c0/len(D))
 print(correct/len(D2))
 
 x = np.linspace(0, 5, 100)
-slope = -perceptron.w[0]/perceptron.w[1]
-intercept = -perceptron.w0/perceptron.w[1]
+slope = -perceptron.w[1]/perceptron.w[2]
+intercept = perceptron.w[0]/perceptron.w[2]
 print(f'{slope}*x + {intercept}')
 y = [ xi*slope + intercept for xi in x ]
 plt.plot(x, y)
-red = [x[0] for x in D2 if x[1] == -1 and perceptron.classify(x[0]) == x[1]]
-blue = [x[0] for x in D2 if x[1] == 1 and perceptron.classify(x[0]) == x[1]]
-green = [x[0] for x in D2 if x[1] == -1 and perceptron.classify(x[0]) != x[1]]
-orange = [x[0] for x in D2 if x[1] == 1 and perceptron.classify(x[0]) != x[1]]
+red = [x[0] for x in D if x[1] == -1 and perceptron.classify(x[0]) == x[1]]
+blue = [x[0] for x in D if x[1] == 1 and perceptron.classify(x[0]) == x[1]]
+green = [x[0] for x in D if x[1] == -1 and perceptron.classify(x[0]) != x[1]]
+orange = [x[0] for x in D if x[1] == 1 and perceptron.classify(x[0]) != x[1]]
 plt.scatter([r[0] for r in red], [r[1] for r in red], color='red')
 plt.scatter([b[0] for b in blue], [b[1] for b in blue], color='blue')
 plt.scatter([b[0] for b in green], [b[1] for b in green], color='green')
 plt.scatter([b[0] for b in orange], [b[1] for b in orange], color='orange')
-
+plt.ylim(0, 5)
+plt.xlim(0, 5)
 plt.show()
