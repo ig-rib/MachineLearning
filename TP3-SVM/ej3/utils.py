@@ -54,7 +54,7 @@ def showConfusionMatrix(cM, cats, title):
     ax.set_xticklabels(plotCategories)
     ax.set_yticklabels(plotCategories)
     plt.title(title)
-    plt.show()
+    # plt.show()
 
     print('Pr/Ac', end='\t')
     for cat in cats:
