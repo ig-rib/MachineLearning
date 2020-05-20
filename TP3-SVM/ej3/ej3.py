@@ -39,12 +39,12 @@ testY = test['Class']
 
 svmHashPrecisions = {}
 
-for C in [1]:
+for C in [0.1, 1, 10]:
     for kernel in ['linear', 'poly', 'rbf', 'sigmoid']:
         suppVectorMachine = SVC(C = C, kernel = kernel)
         suppVectorMachine.fit(trainingX, trainingY)
         accuracy, confusionMatrix = u.testSvm(suppVectorMachine, testX, testY)
-        print(confusionMatrix)
+        # print(confusionMatrix)
         u.showConfusionMatrix(confusionMatrix, confusionMatrix.keys(), f'Confusion Matrix for {kernel}, C={C}')
         svmHashPrecisions[(C, kernel)] = accuracy
         print(C, kernel, accuracy)
