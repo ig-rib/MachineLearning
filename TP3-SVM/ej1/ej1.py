@@ -17,10 +17,6 @@ def mapToClass(pair):
     if pair[1] > f(pair[0]): return -1
     else: return 1
 
-def mapToWrongClass(pair):
-    if pair[1] > f(pair[0]): return -1
-    else: return 1
-
 r = 0.5
 D = [ [p, mapToClass(p)] for p in points]
 
