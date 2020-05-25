@@ -62,7 +62,7 @@ def classifyAndTest(D, epochs=1000):
     plt.title('Test Set Results')
     plt.ylim(0, 5)
     plt.xlim(0, 5)
-    plt.show()
+    # plt.show()
     return perceptron
 
 print('\n######################################################\nCORRECTLY CLASSIFIED TRAINING SET\n######################################################\n')
@@ -70,10 +70,9 @@ perceptron = classifyAndTest(D)
 
 clA, clB = gU.getNClosest(D, perceptron.w, 3)
 
-
-
 bestHyp, hyps = gU.getBestHyperplane(clA, clB)
 for hyp in [bestHyp]:
+    plt.figure(2)
     red = [x[0] for x in D if x[1] == -1 and perceptron.classify(x[0]) == x[1]]
     blue = [x[0] for x in D if x[1] == 1 and perceptron.classify(x[0]) == x[1]]
     plt.scatter([r[0] for r in red], [r[1] for r in red], color='red')
@@ -85,7 +84,7 @@ for hyp in [bestHyp]:
     intercept = perceptron.w[0]/perceptron.w[2]
     print(f'\nSeparating Line Equation:\n{slope}*x + {intercept}\n\n')
     y = [ xi*slope + intercept for xi in x ]
-    plt.plot(x, y)
+    # plt.plot(x, y)
     y = [ xi*hyp['m'] + hyp['b'] for xi in x ]
     plt.plot(x, y)
     print(f'\nSeparating Line Equation:\n{hyp["m"]}*x + {hyp["b"]}\n\n')
