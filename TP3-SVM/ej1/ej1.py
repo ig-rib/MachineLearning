@@ -69,7 +69,7 @@ def classifyAndTest(D, epochs=1000):
 print('\n######################################################\nCORRECTLY CLASSIFIED TRAINING SET\n######################################################\n')
 perceptron = classifyAndTest(D)
 
-clA, clB = gU.getNClosest(D, perceptron.w, 3)
+clA, clB = gU.getNClosest(D, perceptron.w, 4)
 
 bestHyp, hyps = gU.getBestHyperplane(clA, clB, D)
 
@@ -79,7 +79,7 @@ svmW = svc._get_coef()
 svmSlope = -svmW[0][0] / svmW[0][1]
 svmIntercept = svc._intercept_[0] / svmW[0][1]
 figno = 2
-for hyp in [bestHyp, *hyps]:
+for hyp in [bestHyp]:
     plt.figure(figno)
     figno+=1
     red = [x[0] for x in D if x[1] == -1 ]
