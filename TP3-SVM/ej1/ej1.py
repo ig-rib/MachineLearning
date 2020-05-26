@@ -5,10 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import geoUtils as gU
+from sklearn.svm import SVC
 
-points = []
+points_ = []
 for i in range(30):
-    points.append((rd.random()*5, rd.random()*5))
+    points_.append((rd.random()*5, rd.random()*5))
 
 def f(x):
     return 1.5 * x + 0.25
@@ -18,7 +19,7 @@ def mapToClass(pair):
     else: return 1
 
 r = 0.5
-D = [ [p, mapToClass(p)] for p in points]
+D = [ [p, mapToClass(p)] for p in points_]
 
 from linearPerceptron import SimpleStepPerceptron
 
@@ -70,11 +71,19 @@ perceptron = classifyAndTest(D)
 
 clA, clB = gU.getNClosest(D, perceptron.w, 3)
 
-bestHyp, hyps = gU.getBestHyperplane(clA, clB)
-for hyp in [bestHyp]:
-    plt.figure(2)
-    red = [x[0] for x in D if x[1] == -1 and perceptron.classify(x[0]) == x[1]]
-    blue = [x[0] for x in D if x[1] == 1 and perceptron.classify(x[0]) == x[1]]
+bestHyp, hyps = gU.getBestHyperplane(clA, clB, D)
+
+svc = SVC(C=sys.maxsize, kernel='linear')
+svc.fit(np.array(points_), np.array([mapToClass(p) for p in points_]))
+svmW = svc._get_coef()
+svmSlope = -svmW[0][0] / svmW[0][1]
+svmIntercept = svc._intercept_[0] / svmW[0][1]
+figno = 2
+for hyp in [bestHyp, *hyps]:
+    plt.figure(figno)
+    figno+=1
+    red = [x[0] for x in D if x[1] == -1 ]
+    blue = [x[0] for x in D if x[1] == 1 ]
     plt.scatter([r[0] for r in red], [r[1] for r in red], color='red')
     plt.scatter([b[0] for b in blue], [b[1] for b in blue], color='blue')
     plt.scatter([r[0][0] for r in clA], [r[0][1] for r in clA], color='green')
@@ -87,10 +96,16 @@ for hyp in [bestHyp]:
     # plt.plot(x, y)
     y = [ xi*hyp['m'] + hyp['b'] for xi in x ]
     plt.plot(x, y)
+    y = [svmSlope*xi + svmIntercept for xi in x]
+    plt.plot(x, y)
+    plt.legend(['NN-Hyperplane', 'SVM Hyperplane'])
     print(f'\nSeparating Line Equation:\n{hyp["m"]}*x + {hyp["b"]}\n\n')
     plt.ylim(0, 5)
     plt.xlim(0, 5)
-    plt.show()
+    plt.title('Optimal NN Hyperplane vs SVM on Training Set')
+plt.show()
+
+
 # points = []
 # for i in range(1000):
 #     points.append((rd.random()*5, rd.random()*5))
