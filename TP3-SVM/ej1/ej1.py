@@ -8,7 +8,7 @@ import geoUtils as gU
 from sklearn.svm import SVC
 
 points_ = []
-for i in range(30):
+for i in range(20):
     points_.append((rd.random()*5, rd.random()*5))
 
 def f(x):
@@ -69,7 +69,7 @@ def classifyAndTest(D, epochs=1000):
 print('\n######################################################\nCORRECTLY CLASSIFIED TRAINING SET\n######################################################\n')
 perceptron = classifyAndTest(D)
 
-clA, clB = gU.getNClosest(D, perceptron.w, 4)
+clA, clB = gU.getNClosest(D, perceptron.w, 2)
 
 bestHyp, hyps = gU.getBestHyperplane(clA, clB, D)
 
@@ -88,18 +88,21 @@ for hyp in [bestHyp]:
     plt.scatter([b[0] for b in blue], [b[1] for b in blue], color='blue')
     plt.scatter([r[0][0] for r in clA], [r[0][1] for r in clA], color='green')
     plt.scatter([b[0][0] for b in clB], [b[0][1] for b in clB], color='orange')
+    plt.scatter([bl[0][0] for bl in hyp['points'][0]], [bl[0][1] for bl in hyp['points'][0]], color='brown')
+    plt.scatter(hyp['points'][1][0][0], hyp['points'][1][0][1], color='violet')
     x = np.linspace(0, 5, 100)
     slope = -perceptron.w[1]/perceptron.w[2]
     intercept = perceptron.w[0]/perceptron.w[2]
-    print(f'\nSeparating Line Equation:\n{slope}*x + {intercept}\n\n')
+    print(f'\nSeparating Line Equation For NN Hyperplane:\n{slope}*x + {intercept}\n\n')
     y = [ xi*slope + intercept for xi in x ]
-    # plt.plot(x, y)
+    plt.plot(x, y, color='blue')
     y = [ xi*hyp['m'] + hyp['b'] for xi in x ]
-    plt.plot(x, y)
+    plt.plot(x, y, color='red')
     y = [svmSlope*xi + svmIntercept for xi in x]
     plt.plot(x, y)
-    plt.legend(['NN-Hyperplane', 'SVM Hyperplane'])
-    print(f'\nSeparating Line Equation:\n{hyp["m"]}*x + {hyp["b"]}\n\n')
+    plt.legend(['NN-Hyperplane', 'Derived Optimal Hyperplane', 'SVM Hyperplane'])
+    print(f'\nSeparating Line Equation For Derived Optimal Hyperplane:\n{hyp["m"]}*x + {hyp["b"]}\n\n')
+    print(f'\nSeparating Line Equation For SVM Hyperplane:\n{svmSlope}*x + {svmIntercept}\n\n')
     plt.ylim(0, 5)
     plt.xlim(0, 5)
     plt.title('Optimal NN Hyperplane vs SVM on Training Set')

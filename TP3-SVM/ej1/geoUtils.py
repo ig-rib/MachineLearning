@@ -53,6 +53,6 @@ def auxGetHyperPlanes(setA, setB):
             bB = SVB[0][1] - SVB[0][0] * m
 
             bEnd = min(bA, bB) + np.abs(bA-bB) / 2
-            hyperplanes.append({'m' : m, 'b' : bEnd, 'norm' : np.linalg.norm([m, -1])})
+            hyperplanes.append({'m' : m, 'b' : bEnd, 'norm' : np.linalg.norm([m, -1]), 'points' : [SVA, SVB]})
 
     return hyperplanes
