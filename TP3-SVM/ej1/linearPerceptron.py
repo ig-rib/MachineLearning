@@ -33,7 +33,7 @@ class SimpleStepPerceptron(Perceptron):
             if error < bestError:
                 bestError = error
                 self.bestW = self.w
-            print(self.w)
+            # print(self.w)
             i += 1
         self.w = self.bestW
 
