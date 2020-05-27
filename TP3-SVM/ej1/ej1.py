@@ -7,8 +7,16 @@ import sys
 import geoUtils as gU
 from sklearn.svm import SVC
 
+pointQty = 40
+closestPoints = 3
+errorPoints = 4 #incorrect points on each side
+testPoints = 100
+
+bigMarkerSize = 80
+biggerMarkerSize = 200
+
 points_ = []
-for i in range(20):
+for i in range(pointQty):
     points_.append((rd.random()*5, rd.random()*5))
 
 def f(x):
@@ -17,6 +25,10 @@ def f(x):
 def mapToClass(pair):
     if pair[1] > f(pair[0]): return -1
     else: return 1
+
+def mapToWrongClass(pair):
+    if pair[1] > f(pair[0]): return 1
+    else: return -1
 
 r = 0.5
 D = [ [p, mapToClass(p)] for p in points_]
@@ -28,7 +40,7 @@ def classifyAndTest(D, epochs=1000):
     perceptron.train(D, minError=0.0, epochs=epochs)
 
     points = []
-    for i in range(100):
+    for i in range(testPoints):
         points.append((rd.random()*5, rd.random()*5))
 
     D2 = [ [p, mapToClass(p)] for p in points]
@@ -52,6 +64,14 @@ def classifyAndTest(D, epochs=1000):
     print(f'\nSeparating Line Equation:\n{slope}*x + {intercept}\n\n')
     y = [ xi*slope + intercept for xi in x ]
     plt.plot(x, y)
+    svc = SVC(C=sys.maxsize, kernel='linear')
+    svc.fit(np.array(points_), np.array([mapToClass(p) for p in points_]))
+    svmW = svc._get_coef()
+    svmSlope = -svmW[0][0] / svmW[0][1]
+    svmIntercept = svc._intercept_[0] / svmW[0][1]
+    y = [ xi*svmSlope + svmIntercept for xi in x ]
+    plt.plot(x, y)
+    plt.legend(['NN Hyperplane', 'SVM Hyperplane'])
     red = [x[0] for x in D2 if x[1] == -1 and perceptron.classify(x[0]) == x[1]]
     blue = [x[0] for x in D2 if x[1] == 1 and perceptron.classify(x[0]) == x[1]]
     green = [x[0] for x in D2 if x[1] == -1 and perceptron.classify(x[0]) != x[1]]
@@ -69,7 +89,7 @@ def classifyAndTest(D, epochs=1000):
 print('\n######################################################\nCORRECTLY CLASSIFIED TRAINING SET\n######################################################\n')
 perceptron = classifyAndTest(D)
 
-clA, clB = gU.getNClosest(D, perceptron.w, 2)
+clA, clB = gU.getNClosest(D, perceptron.w, closestPoints)
 
 bestHyp, hyps = gU.getBestHyperplane(clA, clB, D)
 
@@ -86,10 +106,64 @@ for hyp in [bestHyp]:
     blue = [x[0] for x in D if x[1] == 1 ]
     plt.scatter([r[0] for r in red], [r[1] for r in red], color='red')
     plt.scatter([b[0] for b in blue], [b[1] for b in blue], color='blue')
-    plt.scatter([r[0][0] for r in clA], [r[0][1] for r in clA], color='green')
-    plt.scatter([b[0][0] for b in clB], [b[0][1] for b in clB], color='orange')
-    plt.scatter([bl[0][0] for bl in hyp['points'][0]], [bl[0][1] for bl in hyp['points'][0]], color='brown')
-    plt.scatter(hyp['points'][1][0][0], hyp['points'][1][0][1], color='violet')
+    plt.scatter([r[0][0] for r in clA], [r[0][1] for r in clA], color='green', s=biggerMarkerSize)
+    plt.scatter([b[0][0] for b in clB], [b[0][1] for b in clB], color='black', s=biggerMarkerSize)
+    plt.scatter([bl[0][0] for bl in hyp['points'][0]], [bl[0][1] for bl in hyp['points'][0]], color='brown', s=bigMarkerSize)
+    plt.scatter(hyp['points'][1][0][0], hyp['points'][1][0][1], color='violet', s=bigMarkerSize)
+    x = np.linspace(0, 5, 100)
+    slope = -perceptron.w[1]/perceptron.w[2]
+    intercept = perceptron.w[0]/perceptron.w[2]
+    print(f'\nSeparating Line Equation For NN Hyperplane:\n{slope}*x + {intercept}\n\n')
+    y = [ xi*slope + intercept for xi in x ]
+    plt.plot(x, y, color='blue')
+    y = [ xi*hyp['m'] + hyp['b'] for xi in x ]
+    plt.plot(x, y, color='red')
+    y = [svmSlope*xi + svmIntercept for xi in x]
+    plt.plot(x, y)
+    plt.legend(['NN-Hyperplane', 'Derived Optimal Hyperplane', 'SVM Hyperplane'])
+    print(f'\nSeparating Line Equation For Derived Optimal Hyperplane:\n{hyp["m"]}*x + {hyp["b"]}\n\n')
+    print(f'\nSeparating Line Equation For SVM Hyperplane:\n{svmSlope}*x + {svmIntercept}\n\n')
+    plt.ylim(0, 5)
+    plt.xlim(0, 5)
+    plt.title('Optimal NN Hyperplane vs SVM on Training Set')
+
+plt.show()
+
+
+points = []
+for i in range(pointQty):
+    points.append((rd.random()*5, rd.random()*5))
+D = [ [p, mapToClass(p)] for p in points]
+points = []
+for i in range(errorPoints):
+    x = rd.random()*5
+    points.append((x, f(x) - rd.random()*1 ))
+    points.append((x, f(x) + rd.random()*1 ))
+D.extend([[p, mapToWrongClass(p)] for p in points])
+
+print('\n######################################################\nTRAINING SET WITH SOME INCORRECTLY CLASSIFIED EXAMPLES\n######################################################\n')
+perceptron = classifyAndTest(D, epochs=250)
+clA, clB = gU.getNClosest(D, perceptron.w, 3)
+
+bestHyp, hyps = gU.getBestHyperplane(clA, clB, D)
+
+svc = SVC(C=sys.maxsize, kernel='linear')
+svc.fit(np.array(points_), np.array([mapToClass(p) for p in points_]))
+svmW = svc._get_coef()
+svmSlope = -svmW[0][0] / svmW[0][1]
+svmIntercept = svc._intercept_[0] / svmW[0][1]
+figno = 2
+for hyp in [bestHyp]:
+    plt.figure(figno)
+    figno+=1
+    red = [x[0] for x in D if x[1] == -1 ]
+    blue = [x[0] for x in D if x[1] == 1 ]
+    plt.scatter([r[0] for r in red], [r[1] for r in red], color='red')
+    plt.scatter([b[0] for b in blue], [b[1] for b in blue], color='blue')
+    plt.scatter([r[0][0] for r in clA], [r[0][1] for r in clA], color='green', s=biggerMarkerSize)
+    plt.scatter([b[0][0] for b in clB], [b[0][1] for b in clB], color='black', s=biggerMarkerSize)
+    plt.scatter([bl[0][0] for bl in hyp['points'][0]], [bl[0][1] for bl in hyp['points'][0]], color='brown', s=bigMarkerSize)
+    plt.scatter(hyp['points'][1][0][0], hyp['points'][1][0][1], color='violet', s=bigMarkerSize)
     x = np.linspace(0, 5, 100)
     slope = -perceptron.w[1]/perceptron.w[2]
     intercept = perceptron.w[0]/perceptron.w[2]
@@ -107,17 +181,3 @@ for hyp in [bestHyp]:
     plt.xlim(0, 5)
     plt.title('Optimal NN Hyperplane vs SVM on Training Set')
 plt.show()
-
-
-# points = []
-# for i in range(1000):
-#     points.append((rd.random()*5, rd.random()*5))
-# D = [ [p, mapToClass(p)] for p in points]
-# points = []
-# for i in range(100):
-#     x = rd.random()*5
-#     points.append((x, f(x) - rd.random()*0.1 * (-1 if rd.random() < 0.5 else 1)))
-# D.extend([[p, mapToWrongClass(p)] for p in points])
-
-# print('\n######################################################\nTRAINING SET WITH SOME INCORRECTLY CLASSIFIED EXAMPLES\n######################################################\n')
-# classifyAndTest(D, epochs=250)

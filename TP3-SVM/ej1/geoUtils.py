@@ -27,11 +27,11 @@ def getBestHyperplane(SVCandidatesA, SVCandidatesB, D):
     allPts = [ x for x in SVCandidatesA ]
     allPts.extend([ x for x in SVCandidatesB ])
     
-    ash = [[(np.sign(h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) != x[1]) for x in D] for h in hyps]
-    ash1 = [list(filter(lambda x: x, [(np.sign(h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) != x[1]) for x in D])) for h in hyps]
-    ash2 = list(filter(lambda h: len(list(filter(lambda x: x, [(np.sign(h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) != x[1]) for x in D]))) == 0, hyps))
-    correctHyps = list(filter(lambda h: len(list(filter(lambda x: x, [np.sign(h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) != np.sign(x[1]) for x in D]))) == 0, hyps))
-    distances = [[ (h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) * x[1] for x in D ] for h in hyps]
+    # ash = [[(np.sign(h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) != x[1]) for x in D] for h in hyps]
+    # ash1 = [list(filter(lambda x: x, [(np.sign(h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) != x[1]) for x in D])) for h in hyps]
+    # ash2 = list(filter(lambda h: len(list(filter(lambda x: x, [(np.sign(h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) != x[1]) for x in D]))) == 0, hyps))
+    # correctHyps = list(filter(lambda h: len(list(filter(lambda x: x, [np.sign(h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) != np.sign(x[1]) for x in D]))) == 0, hyps))
+    # distances = [[ (h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']) * x[1] for x in D ] for h in hyps]
 
     return max(hyps, key=lambda h: min( [ (h['m'] * x[0][0]/ h['norm'] - x[0][1]/ h['norm']  + h['b']/h['norm']) * x[1] for x in D ] )), hyps
 
