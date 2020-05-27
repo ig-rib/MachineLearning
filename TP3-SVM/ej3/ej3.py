@@ -1,80 +1,89 @@
 #!/bin/python3
 
 import os
-import matplotlib.image as img
-import matplotlib.pyplot as plt
+import pickle
 import utils as u
+import seaborn as sn
 import pandas as pd
 from sklearn.svm import SVC
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+from matplotlib import image
 
 # a) Construir el conjunto de datos
 
 percentage = 0.5
 
-skyData = u.normalize(u.loadImage('data/cielo.jpg'))
-cowData = u.normalize(u.loadImage('data/vaca.jpg'))
-grassData = u.normalize(u.loadImage('data/pasto.jpg'))
-testImageData = u.normalize(u.loadExactImage('data/cow.jpg', percentage = 1))
-otherImageData = u.normalize(u.loadExactImage('data/otherImage.jpg', percentage = 1))
+# base_path = 'data'
+base_path = '/Users/martinascomazzon/Documents/GitHub/MachineLearning/TP3-SVM/data'
 
-skyData["Class"] = "Sky"
-cowData["Class"] = "Cow"
-grassData["Class"] = "Grass"
+def load_data(base_path):
+    labels = []
+    data = []
+    for label in os.listdir(base_path):
+        if os.path.isdir(os.path.join(base_path, label)):
+            for img in os.listdir(os.path.join(base_path, label)):
+                img = image.imread(os.path.join(base_path, label, img))
+                for row in img:
+                    for col in row:
+                        data.append(col)
+                        labels.append(label)
 
-theData = pd.concat([skyData, cowData, grassData], ignore_index=True)
+    unique_lables = ['cow', 'grass', 'sky']
+    categorical_lables = [i for i in unique_lables]
+    labels = [categorical_lables.index(lable) for lable in labels]
+    labels = np.array(labels)
+    data = np.array(data)
+    return data, labels
+
+data, labels = load_data(base_path)
 
 # b) Dividir en training y test set
 
-splittingIndex = int(len(theData) * percentage)
-theData = theData.sample(frac=1, replace=False)
-trainingSet = theData[:splittingIndex]
-trainingX = trainingSet[['R', 'G', 'B']]
-trainingY = trainingSet['Class']
-test = theData[splittingIndex:]
-testX = test[['R', 'G', 'B']]
-testY = test['Class']
+
+trainingSet, test, trainingY, testY = train_test_split(data, labels, train_size=percentage)
 
 # c) Evaluar varias configuraciones de SVMs, matrices de confusión
 
-svmHashPrecisions = {}
+suppVectorMachine = SVC(C = 0.8, kernel = 'lineal')
+suppVectorMachine.fit(trainingSet, trainingY)
 
-for C in [0.1, 1, 10]:
-    for kernel in ['linear', 'poly', 'rbf', 'sigmoid']:
-        suppVectorMachine = SVC(C = C, kernel = kernel)
-        suppVectorMachine.fit(trainingX, trainingY)
-        accuracy, confusionMatrix = u.testSvm(suppVectorMachine, testX, testY)
-        # print(confusionMatrix)
-        u.showConfusionMatrix(confusionMatrix, confusionMatrix.keys(), f'Confusion Matrix for {kernel}, C={C}')
-        svmHashPrecisions[(C, kernel)] = accuracy
-        print(C, kernel, accuracy)
+predictions = suppVectorMachine.predict(test)
+
+possible_labels = set(testY)
+possible_labels = list(possible_labels)
+
+#confusion matrix
+conf_matrix = confusion_matrix(testY, predictions, labels=possible_labels)
+print(conf_matrix)
+df_cm = pd.DataFrame(conf_matrix, index=list(possible_labels), columns=list(possible_labels))
+sn.heatmap(df_cm, annot=True)
 
 # d) Mejor núcleo (y C)
-
-bestSettings = max(svmHashPrecisions.keys(), key=lambda x: svmHashPrecisions[x])
-print('Best Settings', bestSettings)
+# mejor nucleo es el de rbf
 
 # e) Con el mejor clasificar todos los pixeles de la imagen
 
-bestSVM = SVC(C = bestSettings[0], kernel = bestSettings[1])
+class_color = [
+    [255, 0,0],
+    [0, 255, 0],
+    [0, 0, 255]
+]
 
-classIdentifiers = {
-    'Cow': [255, 0, 0],
-    'Sky': [0, 0, 255],
-    'Grass': [0, 255, 0]
-}
+# img_path = 'data/image_cow.jpg'
+img_path = '/Users/martinascomazzon/Documents/GitHub/MachineLearning/TP3-SVM/data/image_cow.jpg.jpg'
+img = image.imread(img_path)
 
-bestSVM.fit(trainingX, trainingY)
+predictions_img = []
+for row in img:
+    row_pred = []
+    for col in row:
+        pred = suppVectorMachine.predict(np.array([col]))
+        row_pred.append(class_color[int(pred)])
+        print(row_pred)
+    predictions_img.append(row_pred)
 
-def plotImage(imageData, w, h):
-    imageMapping = bestSVM.predict(imageData)
-    imageMapping.reshape(h, w)
-    pixels = np.array([ classIdentifiers[x] for x in imageMapping ]).reshape(h, w, 3)
-    plt.imshow(pixels)
-    plt.show()
-
-# plotImage(testImageData, 1140, 760)
-
-# f) Con el mejor clasificar todos los pixeles de la otra imagen
-
-plotImage(otherImageData, 1200, 800)
+predictions_img = np.array(predictions_img)
+predictions_img = predictions_img.astype('uint8')
+image.imsave('output.jpg', predictions_img)

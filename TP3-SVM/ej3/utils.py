@@ -26,11 +26,13 @@ def testSvm(svm, testVectors, testYs):
     confusionMatrix = { header: { header1: 0 for header1 in ['Sky', 'Cow', 'Grass'] } for header in ['Sky', 'Cow', 'Grass'] }
     for i in range(len(testVectors)):
         predictedValue = predYs[i]
+        print(predictedValue)
         actualValue = testYs.iloc[i]
         confusionMatrix[predYs[i]][actualValue] += 1
         correct+= 1 if predYs[i] == testYs.iloc[i] else 0
     accuracy = correct/len(testVectors)
     return accuracy, confusionMatrix
+
 
 def showConfusionMatrix(cM, cats, title):
     
@@ -65,3 +67,4 @@ def showConfusionMatrix(cM, cats, title):
         for cat2 in cats:
             print(cM[cat1][cat2], end='\t')
         print()
+
