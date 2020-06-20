@@ -6,7 +6,7 @@ import numpy as np
 # This kind of normalization can be interesting in case of class imbalance to have a more visual
 # interpretation of which class is being misclassified
 
-def plot_confusion_matrix_bis(title, train, predictions, test_data, test_labels, normalize='true'):
+def plot_confusion_matrix_bis(title, train, predictions, test_data, test_labels, normalize='None'):
     cm = confusion_matrix(test_labels, predictions, labels=[0, 1])
     if normalize == 'None':
         plot_confusion_matrix(train, test_data, test_labels)
