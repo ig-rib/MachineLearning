@@ -66,14 +66,14 @@ data = data.to_numpy()
 train_percentage = 0.8
 train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
-print('Ejercicio b, sin sex')
+print('Ejercicio B, sin sex')
 coefficients, intercept = logistic_training('b', train_data, test_data, train_labels, test_labels)
 
 p_num_exp = intercept[0] + coefficients[0][0]*60 + coefficients[0][1]*2 + coefficients[0][2]*199
 p_num = pow(base=math.e, exp=p_num_exp);
 p_den = 1 + p_num
 p = p_num/p_den
-print("Ejercicio C: La probabilidad de que tenga la enfermedad es: " + str(p) + " como p>0.5 esta enfermo")
+print("Ejercicio C: La probabilidad de que tenga la enfermedad es: " + str(p) + " como p>0.5 esta enfermo\n")
 
 
 
@@ -85,5 +85,5 @@ data = data.to_numpy()
 train_percentage = 0.8
 train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
-# print('Ejercicio d, con sex')
-# logistic_training('d', train_data, test_data, train_labels, test_labels)
+print('Ejercicio D, con sex')
+logistic_training('d', train_data, test_data, train_labels, test_labels)
