@@ -33,14 +33,19 @@ def normalize_data(d):
     return pd.DataFrame(x);
 
 
-def logistic_training(train_data, test_data, train_labels, test_labels):
+def logistic_training(ex, train_data, test_data, train_labels, test_labels):
     # trainig Logistic taken from sklearn.linear_model
     train = LogisticRegression(n_jobs=3, C=0.3);
     train.fit(train_data, train_labels)
 
     # testing results
     predictions = train.predict(test_data)
-    plot_confusion_matrix_bis(train, predictions, test_data, test_labels, normalize='true')
+    title = 'Regresión Logística'
+    if ex == 'b':
+        title = title + ' sin sex (b)'
+    if ex == 'd':
+        title = title + ' con sex (d)'
+    plot_confusion_matrix_bis(title, train, predictions, test_data, test_labels, normalize='true')
 
 
 # import data
@@ -58,7 +63,7 @@ train_percentage = 0.8
 train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
 print('Ejercicio b, sin sex')
-logistic_training(train_data, test_data, train_labels, test_labels)
+logistic_training('b', train_data, test_data, train_labels, test_labels)
 
 # d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
 data = file_data[['sex', 'age', 'cad.dur', 'choleste']]
@@ -69,4 +74,4 @@ train_percentage = 0.8
 train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
 print('Ejercicio d, con sex')
-logistic_training(train_data, test_data, train_labels, test_labels)
+logistic_training('d', train_data, test_data, train_labels, test_labels)
