@@ -97,6 +97,10 @@ data1 = data1.to_numpy()
 
 train_percentage = 0.05
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
+##########################
+## Hierarchical Clustering
+##########################
+
 
 hc = HierarchicalClustering()
 root = hc.group(np.matrix(train_data))
@@ -122,6 +126,10 @@ FP = len([True for index, x in enumerate(classifiedExamples) if train_labels[ind
 FN = len([True for index, x in enumerate(classifiedExamples) if train_labels[index] == 1 and classifiedExamples[index] == 0])
 
 print(f"Agrupamiento Jerárquico:\n\tAc/Pr\tN\tP\n\tN\t{TN}\t{FP}\n\tP\t{FN}\t{TP}\n\n")
+
+##########################
+## Kohonen
+##########################
 
 train_percentage = 0.9
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
