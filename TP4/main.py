@@ -1,7 +1,7 @@
 #!/bin/python3
 
 import pandas as pd
-from utils import plot_confusion_matrix_bis
+from utils import plot_confusion_matrix_bis, fill_data, normalize_data
 import math
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -18,20 +18,6 @@ import matplotlib.pyplot as plt
 # USEFULL LINKS
 # https://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
 
-# DATA MANAGMENT
-
-def fill_data(fill):
-    # fill values that are Nan
-    d = fill.sort_values(by=['age'])
-    d.fillna(inplace=True, method='ffill')
-    return d;
-
-
-def normalize_data(d):
-    aux = d.values;
-    s = preprocessing.MinMaxScaler();
-    x = s.fit_transform(aux);
-    return pd.DataFrame(x);
 
 
 def logistic_training(ex, train_data, test_data, train_labels, test_labels):
@@ -76,10 +62,9 @@ p = p_num/p_den
 print("Ejercicio C: La probabilidad de que tenga la enfermedad es: " + str(p) + " como p>0.5 esta enfermo\n")
 
 
-
 # d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
 data = file_data[['sex', 'age', 'cad.dur', 'choleste']]
-#data = normalize_data(data)
+data = normalize_data(data)
 data = data.to_numpy()
 
 train_percentage = 0.8
@@ -87,3 +72,4 @@ train_data, test_data, train_labels, test_labels = train_test_split(data, label,
 
 print('Ejercicio D, con sex')
 logistic_training('d', train_data, test_data, train_labels, test_labels)
+

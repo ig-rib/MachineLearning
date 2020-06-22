@@ -1,6 +1,8 @@
+from sklearn import preprocessing
 from sklearn.metrics import plot_confusion_matrix, confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 # This kind of normalization can be interesting in case of class imbalance to have a more visual
@@ -30,3 +32,17 @@ def plot_confusion_matrix_bis(title, train, predictions, test_data, test_labels,
     plt.xlabel('Predicción\naccuracy={:0.4f}; misclassified={:0.4f}'.format(accuracy, misclassified))
     plt.ylabel('Original')
     plt.show()
+
+
+def fill_data(fill):
+    # fill values that are Nan
+    d = fill.sort_values(by=['age'])
+    d.fillna(inplace=True, method='ffill')
+    return d;
+
+
+def normalize_data(d):
+    aux = d.values;
+    s = preprocessing.MinMaxScaler();
+    x = s.fit_transform(aux);
+    return pd.DataFrame(x);
