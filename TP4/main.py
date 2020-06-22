@@ -64,29 +64,29 @@ label = file_data['sigdz'].to_list()
 data = normalize_data(data)
 data = data.to_numpy()
 
-# from sklearn.model_selection import train_test_split
-# train_percentage = 0.8
-# train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
+from sklearn.model_selection import train_test_split
+train_percentage = 0.8
+train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
-# print('Ejercicio B, sin sex')
-# coefficients, intercept = logistic_training('b', train_data, test_data, train_labels, test_labels)
+print('Ejercicio B, sin sex')
+coefficients, intercept = logistic_training('b', train_data, test_data, train_labels, test_labels)
 
-# p_num_exp = intercept[0] + coefficients[0][0]*60 + coefficients[0][1]*2 + coefficients[0][2]*199
-# p_num = pow(math.e, p_num_exp);
-# p_den = 1 + p_num
-# p = p_num/p_den
-# print("Ejercicio C: La probabilidad de que tenga la enfermedad es: " + str(p) + " como p>0.5 esta enfermo\n")
+p_num_exp = intercept[0] + coefficients[0][0]*60 + coefficients[0][1]*2 + coefficients[0][2]*199
+p_num = pow(math.e, p_num_exp);
+p_den = 1 + p_num
+p = p_num/p_den
+print("Ejercicio C: La probabilidad de que tenga la enfermedad es: " + str(p) + " como p>0.5 esta enfermo\n")
 
-# # d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
-# data = file_data[['sex', 'age', 'cad.dur', 'choleste']]
-# #data = normalize_data(data)
-# data = data.to_numpy()
+# d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
+data = file_data[['sex', 'age', 'cad.dur', 'choleste']]
+#data = normalize_data(data)
+data = data.to_numpy()
 
-# train_percentage = 0.8
-# train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
+train_percentage = 0.8
+train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
-# print('Ejercicio D, con sex')
-# logistic_training('d', train_data, test_data, train_labels, test_labels)
+print('Ejercicio D, con sex')
+logistic_training('d', train_data, test_data, train_labels, test_labels)
 
 # e) 
 
@@ -100,10 +100,28 @@ train_data, test_data, train_labels, test_labels = train_test_split(data1, label
 
 hc = HierarchicalClustering()
 root = hc.group(np.matrix(train_data))
-root
 
-for i in range(len(train_labels)):
-    print(f"{i}:\t{hc.binaryClassify(i)}\t{train_labels[i]}")
+classifiedExamples = [hc.binaryClassify(i) for i in range(len(train_data))]
+Acount = len([x for x in classifiedExamples if x == 'A'])
+bestClass = max([('A', Acount), ('B', len(classifiedExamples) - Acount)], key=lambda x: x[1])[0]
+classification = {'A': None, 'B': None}
+
+classification[bestClass] = max( [
+                            (0, len([x for index, x in enumerate(classifiedExamples) if x == bestClass and train_labels[index] == 0])), 
+                            (1, len([x for index, x in enumerate(classifiedExamples) if x == bestClass and train_labels[index] == 1]))
+                            ],
+                            key=lambda x: x[1]
+                            )[0]
+classification['B' if bestClass == 'A' else 'A'] = 1 if classification['A'] == 0 else 0
+
+classifiedExamples = [classification[hc.binaryClassify(i)] for i in range(len(train_data))]
+
+TP = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == train_labels[index] and classifiedExamples[index] == 0])
+TN = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == train_labels[index] and classifiedExamples[index] == 1])
+FP = len([True for index, x in enumerate(classifiedExamples) if train_labels[index] == 0 and classifiedExamples[index] == 1])
+FN = len([True for index, x in enumerate(classifiedExamples) if train_labels[index] == 1 and classifiedExamples[index] == 0])
+
+print(f"Agrupamiento Jerárquico:\n\tAc/Pr\tN\tP\n\tN\t{TN}\t{FP}\n\tP\t{FN}\t{TP}\n\n")
 
 train_percentage = 0.9
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
