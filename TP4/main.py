@@ -52,23 +52,27 @@ label = file_data['sigdz'].to_list()
 data = normalize_data(data)
 data = data.to_numpy()
 
-# from sklearn.model_selection import train_test_split
-# train_percentage = 0.8
-# train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
+from sklearn.model_selection import train_test_split
+train_percentage = 0.8
+train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
-# print('Ejercicio B, sin sex')
-# coefficients, intercept = logistic_training('b', train_data, test_data, train_labels, test_labels)
+print('Ejercicio B, sin sex')
+coefficients, intercept = logistic_training('b', train_data, test_data, train_labels, test_labels)
 
-# p_num_exp = intercept[0] + coefficients[0][0]*60 + coefficients[0][1]*2 + coefficients[0][2]*199
-# p_num = pow(math.e, p_num_exp);
-# p_den = 1 + p_num
-# p = p_num/p_den
-# print("Ejercicio C: La probabilidad de que tenga la enfermedad es: " + str(p) + " como p>0.5 esta enfermo\n")
+p_num_exp = intercept[0] + coefficients[0][0]*60 + coefficients[0][1]*2 + coefficients[0][2]*199
+p_num = pow(math.e, p_num_exp);
+p_den = 1 + p_num
+p = p_num/p_den
+print("Ejercicio C: La probabilidad de que tenga la enfermedad es: " + str(p) + " como p>0.5 esta enfermo\n")
 
-# # d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
-# data = file_data[['sex', 'age', 'cad.dur', 'choleste']]
-# #data = normalize_data(data)
-# data = data.to_numpy()
+# d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
+data = file_data[['sex', 'age', 'cad.dur', 'choleste']]
+#data = normalize_data(data)
+data = data.to_numpy()
+
+train_percentage = 0.8
+train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
+
 
 
 # d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
@@ -79,10 +83,20 @@ data = data.to_numpy()
 # train_percentage = 0.8
 # train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
-# print('Ejercicio D, con sex')
-# logistic_training('d', train_data, test_data, train_labels, test_labels)
+print('Ejercicio D, con sex')
+logistic_training('d', train_data, test_data, train_labels, test_labels)
 
-# e) 
+
+# # e) 
+
+def print_unsupervised_confusion_matrix(title, classifiedExamples, actual):
+    
+    TP = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 0])
+    TN = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 1])
+    FP = len([True for index, x in enumerate(classifiedExamples) if actual[index] == 0 and classifiedExamples[index] == 1])
+    FN = len([True for index, x in enumerate(classifiedExamples) if actual[index] == 1 and classifiedExamples[index] == 0])
+
+    print(f"{title}:\n\tAc/Pr\tN\tP\n\tN\t{TN}\t{FP}\n\tP\t{FN}\t{TP}\n\n")
 
 data = file_data[['age', 'choleste', 'cad.dur']]
 scaler = StandardScaler()
@@ -92,17 +106,43 @@ data1 = data1.to_numpy()
 train_percentage = 0.05
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
 
-# hc = HierarchicalClustering()
-# root = hc.group(np.matrix(train_data))
-# root
-#
-# for i in range(len(train_labels)):
-#     print(f"{i}:\t{hc.binaryClassify(i)}\t{train_labels[i]}")
+
+###########################
+### Hierarchical Clustering
+###########################
 
 
-train_percentage = 0.9
-train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
+hc = HierarchicalClustering()
+root = hc.group(np.matrix(train_data))
 
+classifiedExamples = [hc.binaryClassify(i) for i in range(len(train_data))]
+
+
+Acount = len([x for x in classifiedExamples if x == 'A'])
+bestClass = max([('A', Acount), ('B', len(classifiedExamples) - Acount)], key=lambda x: x[1])[0]
+classification = {'A': None, 'B': None}
+
+classification[bestClass] = max( [
+                            (0, len([x for index, x in enumerate(classifiedExamples) if x == bestClass and train_labels[index] == 0])), 
+                            (1, len([x for index, x in enumerate(classifiedExamples) if x == bestClass and train_labels[index] == 1]))
+                            ],
+                            key=lambda x: x[1]
+                            )[0]
+classification['B' if bestClass == 'A' else 'A'] = 1 if classification['A'] == 0 else 0
+
+classifiedExamples[:] = [classification[x] for x in classifiedExamples]
+
+print_unsupervised_confusion_matrix('Hierarchical Clustering', classifiedExamples, train_labels)
+
+##########################
+## Kohonen
+##########################
+# >>>>>>> 0b0a53a6d63bfc0954ba4c6973fe7be61bd4653a
+
+# train_percentage = 0.9
+# train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
+
+# <<<<<<< HEAD
 # kn = KohonenNetwork(len(train_data[0]), 4, train_data)
 # kn.train(np.matrix(train_data), 10000)
 # kn
@@ -134,3 +174,24 @@ print(correct)
 
 # clf = clf.predict(test_data)
 # print(clf)
+
+kn = KohonenNetwork(len(train_data[0]), 4, D=train_data)
+
+classZeroNodes = [train_data[i] for i, data in enumerate(train_data) if train_labels[i] == 0]
+classOneNodes = [train_data[i] for i, data in enumerate(train_data) if train_labels[i] == 1]
+
+kn.W = np.asmatrix([
+    classZeroNodes[0],
+    classZeroNodes[1],
+    classOneNodes[0],
+    classOneNodes[1]
+])
+
+kn.train(np.matrix(train_data), 25000, R=1)
+
+
+# classifiedExamples = ['A' if kn.getClass(train_data[i])[0] == 0 else 'B' for i in range(len(train_data))]
+classifiedExamples = [kn.getClass(train_data[i])[0] for i in range(len(train_data))]
+
+print_unsupervised_confusion_matrix('Kohonen Nets - Simplified', classifiedExamples, train_labels)
+

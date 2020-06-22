@@ -70,8 +70,27 @@ class KohonenNetwork:
                 it+=1
         return activationCounts
         
+    def trainLine(self, D, lda, R=0):
+        indices = list(range(D.shape[0]))
+        it = 0
+        while it < lda:
+            random.shuffle(indices)
+            for index in indices:
+                curr = D[index]
+                distances = [ [np.linalg.norm(curr - x), i] for i, x in enumerate(self.W) ]
+                minIndex = min(distances, key=lambda x: x[0])[1]
+                # for rowNo in range(self.W.shape[0]):
+                self.W[minIndex] = self.W[minIndex] + 1 * alpha(it, lda) * (curr - self.W[minIndex])
+                if it % (lda*.1) == 0 and R > 1:
+                    R -= 1
+                it+=1
+
     def getClass(self, vector):
         distances = [ [np.linalg.norm(vector - x), i] for i, x in enumerate(self.W) ]
         neuronNo = min(distances, key=lambda x: x[0])[1]
         return (neuronNo // self.L, neuronNo % self.L)
         # return Coord(x=neuronNo // self.L, y=neuronNo % self.L)
+
+    def getLineClass(self, vector):
+        distances = [ [np.linalg.norm(vector - x), i] for i, x in enumerate(self.W) ]
+        return min(distances, key=lambda x: x[0])[1]
