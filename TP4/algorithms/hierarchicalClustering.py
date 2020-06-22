@@ -23,7 +23,7 @@ class HierarchicalClustering:
 
     def __init__(self):
         ## Unimplemented
-        self
+        self.root = None
 
     def group(self, D):
         groups = [ClusterNode(nodes=[i]) for i in range(len(D))]
@@ -38,8 +38,12 @@ class HierarchicalClustering:
             groups.remove(minPair[0])
             groups.remove(minPair[1][1])
             groups.append(newNode)
-        
+        self.root = newNode
         return newNode
+
+    # Does not account for invalid indices -> classified as 'B'
+    def binaryClassify(self, index):
+        return 'A' if index in self.root.children[0].nodes else 'B' 
 
 # D = np.matrix([
 #     [0, 1, 2],
