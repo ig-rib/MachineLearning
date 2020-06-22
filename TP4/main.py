@@ -88,7 +88,16 @@ train_data, test_data, train_labels, test_labels = train_test_split(data, label,
 print('Ejercicio D, con sex')
 logistic_training('d', train_data, test_data, train_labels, test_labels)
 
-# e) 
+# # e) 
+
+def print_unsupervised_confusion_matrix(title, classifiedExamples, actual):
+    
+    TP = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 0])
+    TN = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 1])
+    FP = len([True for index, x in enumerate(classifiedExamples) if actual[index] == 0 and classifiedExamples[index] == 1])
+    FN = len([True for index, x in enumerate(classifiedExamples) if actual[index] == 1 and classifiedExamples[index] == 0])
+
+    print(f"{title}:\n\tAc/Pr\tN\tP\n\tN\t{TN}\t{FP}\n\tP\t{FN}\t{TP}\n\n")
 
 data = file_data[['age', 'choleste', 'cad.dur']]
 scaler = StandardScaler()
@@ -97,15 +106,18 @@ data1 = data1.to_numpy()
 
 train_percentage = 0.05
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
-##########################
-## Hierarchical Clustering
-##########################
+
+###########################
+### Hierarchical Clustering
+###########################
 
 
 hc = HierarchicalClustering()
 root = hc.group(np.matrix(train_data))
 
 classifiedExamples = [hc.binaryClassify(i) for i in range(len(train_data))]
+
+
 Acount = len([x for x in classifiedExamples if x == 'A'])
 bestClass = max([('A', Acount), ('B', len(classifiedExamples) - Acount)], key=lambda x: x[1])[0]
 classification = {'A': None, 'B': None}
@@ -118,14 +130,9 @@ classification[bestClass] = max( [
                             )[0]
 classification['B' if bestClass == 'A' else 'A'] = 1 if classification['A'] == 0 else 0
 
-classifiedExamples = [classification[hc.binaryClassify(i)] for i in range(len(train_data))]
+classifiedExamples[:] = [classification[x] for x in classifiedExamples]
 
-TP = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == train_labels[index] and classifiedExamples[index] == 0])
-TN = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == train_labels[index] and classifiedExamples[index] == 1])
-FP = len([True for index, x in enumerate(classifiedExamples) if train_labels[index] == 0 and classifiedExamples[index] == 1])
-FN = len([True for index, x in enumerate(classifiedExamples) if train_labels[index] == 1 and classifiedExamples[index] == 0])
-
-print(f"Agrupamiento Jerárquico:\n\tAc/Pr\tN\tP\n\tN\t{TN}\t{FP}\n\tP\t{FN}\t{TP}\n\n")
+print_unsupervised_confusion_matrix('Hierarchical Clustering', classifiedExamples, train_labels)
 
 ##########################
 ## Kohonen
@@ -134,6 +141,22 @@ print(f"Agrupamiento Jerárquico:\n\tAc/Pr\tN\tP\n\tN\t{TN}\t{FP}\n\tP\t{FN}\t{T
 train_percentage = 0.9
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
 
-kn = KohonenNetwork(len(train_data[0]), 4, train_data)
-kn.train(np.matrix(train_data), 10000)
-kn
+kn = KohonenNetwork(len(train_data[0]), 4, D=train_data)
+
+classZeroNodes = [train_data[i] for i, data in enumerate(train_data) if train_labels[i] == 0]
+classOneNodes = [train_data[i] for i, data in enumerate(train_data) if train_labels[i] == 1]
+
+kn.W = np.asmatrix([
+    classZeroNodes[0],
+    classZeroNodes[1],
+    classOneNodes[0],
+    classOneNodes[1]
+])
+
+kn.train(np.matrix(train_data), 25000, R=1)
+
+
+# classifiedExamples = ['A' if kn.getClass(train_data[i])[0] == 0 else 'B' for i in range(len(train_data))]
+classifiedExamples = [kn.getClass(train_data[i])[0] for i in range(len(train_data))]
+
+print_unsupervised_confusion_matrix('Kohonen Nets - Simplified', classifiedExamples, train_labels)
