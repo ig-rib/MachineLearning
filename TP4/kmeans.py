@@ -15,7 +15,7 @@ print(data)
 #Sorting ensures that I will pick k observations that are all very similar to each other
 # as my initial centroids. This way, the starting centroids will be suboptimal and we can
 # more clearly see how the algorithm is able to converge to much better centroids (and clusters)
-data.sort_values(by=['age', 'cad.dur', 'choleste'], inplace=True)
+# data.sort_values(by=['age', 'cad.dur', 'choleste'], inplace=True)
 cluster_array = np.array(data)
 
 # Calculate Euclidean distance between two observations
@@ -72,9 +72,10 @@ centroids = [cluster_array[i+2] for i in range(k)]
 clusters = assign_clusters(centroids, cluster_array)
 initial_clusters = clusters
 print(0, round(np.mean(calc_centroid_variance(clusters, cluster_array))))
-for i in range(20):
+for i in range(50):
     centroids = calc_centroids(clusters, cluster_array)
     clusters = assign_clusters(centroids, cluster_array)
+    print(clusters)
     cluster_var = np.mean(calc_centroid_variance(clusters,
                                                  cluster_array))
     cluster_vars.append(cluster_var)
@@ -87,18 +88,17 @@ plt.ylabel('Mean Sum of Squared Deviations');
 plt.savefig('mean_ssd', bpi=150)
 
 print(cluster_array[1, :])
-# print(cluster_array[1, 0])
 
 plt.subplots(figsize=(9,6))
 plt.scatter(x=cluster_array[:,4], y=cluster_array[:,1],
             c=initial_clusters, cmap=plt.cm.Spectral);
-plt.xlabel('Edad')
-plt.ylabel('Colesterol');
+plt.xlabel('Colesterol')
+plt.ylabel('enfermo');
 plt.savefig('initial_clusters', bpi=150)
 
 plt.subplots(figsize=(9,6))
 plt.scatter(x=cluster_array[:,4], y=cluster_array[:,1],
             c=clusters, cmap=plt.cm.Spectral);
-plt.xlabel('Edad')
-plt.ylabel('Colesterol');
+plt.xlabel('Colesterol')
+plt.ylabel('enfermo');
 plt.savefig('final_clusters', bpi=150)

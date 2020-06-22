@@ -2,6 +2,8 @@
 
 import pandas as pd
 from utils import plot_confusion_matrix_bis, fill_data, normalize_data
+from algorithms.kmeans import *
+from algorithms.kmeans2 import *
 import math
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -90,23 +92,45 @@ data1 = data1.to_numpy()
 train_percentage = 0.05
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
 
-hc = HierarchicalClustering()
-root = hc.group(np.matrix(train_data))
-root
-
-for i in range(len(train_labels)):
-    print(f"{i}:\t{hc.binaryClassify(i)}\t{train_labels[i]}")
+# hc = HierarchicalClustering()
+# root = hc.group(np.matrix(train_data))
+# root
+#
+# for i in range(len(train_labels)):
+#     print(f"{i}:\t{hc.binaryClassify(i)}\t{train_labels[i]}")
 
 
 train_percentage = 0.9
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
 
+# kn = KohonenNetwork(len(train_data[0]), 4, train_data)
+# kn.train(np.matrix(train_data), 10000)
+# kn
 
-print('Ejercicio D, con sex')
-logistic_training('d', train_data, test_data, train_labels, test_labels)
 
 
-kn = KohonenNetwork(len(train_data[0]), 4, train_data)
-kn.train(np.matrix(train_data), 10000)
-kn
+model = KMeans(3)
+model.fit(train_data, train_labels)
 
+m = model.predict(test_data)
+m = np.array(m)
+print(len(m))
+correct = 0
+for i in range(len(m)):
+    if m[i] == test_labels[i]:
+        correct += 1;
+
+print(correct)
+
+# model = K_Means(2)
+# model.fit(train_data)
+#
+# m = model.predict(test_data)
+# print(m)
+
+# print(train_labels)
+#label me dice si es 1 o 0, enfermo o no enfermo !!
+
+
+# clf = clf.predict(test_data)
+# print(clf)
