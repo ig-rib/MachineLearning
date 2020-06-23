@@ -70,7 +70,7 @@ logistic_training('d', train_data, test_data, train_labels, test_labels)
 
 
 # # e) 
-
+#{1=positivo, 0=negativo}
 def print_unsupervised_confusion_matrix(title, classifiedExamples, actual):
     
     TP = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 1])
