@@ -1,25 +1,16 @@
 #!/bin/python3
 
-import pandas as pd
+
 from utils import plot_confusion_matrix_bis, fill_data, normalize_data
-from algorithms.kmeans import *
 from algorithms.kmeans2 import *
 import math
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.decomposition import PCA
-# import statsmodels.api as sm
-from sklearn import preprocessing
-from sklearn.metrics import confusion_matrix
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-# for confusion matrix printing
-import seaborn as sns
-import matplotlib.pyplot as plt
 from algorithms.hierarchicalClustering import HierarchicalClustering, ClusterNode
 from algorithms.kohonenNet import KohonenNetwork
 
-# USEFULL LINKS
+# USEFUL LINKS
 # https://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
 
 
@@ -65,15 +56,6 @@ p_den = 1 + p_num
 p = p_num/p_den
 print("Ejercicio C: La probabilidad de que tenga la enfermedad es: " + str(p) + " como p>0.5 esta enfermo\n")
 
-# d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
-data = file_data[['sex', 'age', 'cad.dur', 'choleste']]
-#data = normalize_data(data)
-data = data.to_numpy()
-
-train_percentage = 0.8
-train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
-
-
 
 # d) tenemos que agregar el sexo y hacemos el mismo procedimiento que (a)
 data = file_data[['sex', 'age', 'cad.dur', 'choleste']]
@@ -81,7 +63,7 @@ data = normalize_data(data)
 data = data.to_numpy()
 
 # train_percentage = 0.8
-# train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
+train_data, test_data, train_labels, test_labels = train_test_split(data, label, train_size=train_percentage)
 
 print('Ejercicio D, con sex')
 logistic_training('d', train_data, test_data, train_labels, test_labels)
@@ -96,21 +78,29 @@ def print_unsupervised_confusion_matrix(title, classifiedExamples, actual):
     FP = len([True for index, x in enumerate(classifiedExamples) if actual[index] == 0 and classifiedExamples[index] == 1])
     FN = len([True for index, x in enumerate(classifiedExamples) if actual[index] == 1 and classifiedExamples[index] == 0])
 
-    print(f"{title}:\n\tAc/Pr\tN\tP\n\tN\t{TN}\t{FP}\n\tP\t{FN}\t{TP}\n\n")
+    print(f"{title}:\n\tAc/Pr\tN\tP\n\tN\t\t{TN}\t{FP}\n\tP\t\t{FN}\t{TP}\n\n")
 
 data = file_data[['age', 'choleste', 'cad.dur']]
 scaler = StandardScaler()
 data1 = pd.DataFrame(scaler.fit_transform(data), index=data.index, columns=data.columns)
 data1 = data1.to_numpy()
 
-train_percentage = 0.05
+train_percentage = 0.01
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
 
+##########################
+## KMeans
+##########################
+
+model = KMeans(34)
+model.fit(train_data, train_labels)
+
+classifiedExamples = model.predict(train_data)
+print_unsupervised_confusion_matrix('Kmeans', classifiedExamples, train_labels)
 
 ###########################
 ### Hierarchical Clustering
 ###########################
-
 
 hc = HierarchicalClustering()
 root = hc.group(np.matrix(train_data))
@@ -123,7 +113,7 @@ bestClass = max([('A', Acount), ('B', len(classifiedExamples) - Acount)], key=la
 classification = {'A': None, 'B': None}
 
 classification[bestClass] = max( [
-                            (0, len([x for index, x in enumerate(classifiedExamples) if x == bestClass and train_labels[index] == 0])), 
+                            (0, len([x for index, x in enumerate(classifiedExamples) if x == bestClass and train_labels[index] == 0])),
                             (1, len([x for index, x in enumerate(classifiedExamples) if x == bestClass and train_labels[index] == 1]))
                             ],
                             key=lambda x: x[1]
@@ -137,43 +127,6 @@ print_unsupervised_confusion_matrix('Hierarchical Clustering', classifiedExample
 ##########################
 ## Kohonen
 ##########################
-# >>>>>>> 0b0a53a6d63bfc0954ba4c6973fe7be61bd4653a
-
-# train_percentage = 0.9
-# train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
-
-# <<<<<<< HEAD
-# kn = KohonenNetwork(len(train_data[0]), 4, train_data)
-# kn.train(np.matrix(train_data), 10000)
-# kn
-
-
-
-model = KMeans(3)
-model.fit(train_data, train_labels)
-
-m = model.predict(test_data)
-m = np.array(m)
-print(len(m))
-correct = 0
-for i in range(len(m)):
-    if m[i] == test_labels[i]:
-        correct += 1;
-
-print(correct)
-
-# model = K_Means(2)
-# model.fit(train_data)
-#
-# m = model.predict(test_data)
-# print(m)
-
-# print(train_labels)
-#label me dice si es 1 o 0, enfermo o no enfermo !!
-
-
-# clf = clf.predict(test_data)
-# print(clf)
 
 kn = KohonenNetwork(len(train_data[0]), 4, D=train_data)
 

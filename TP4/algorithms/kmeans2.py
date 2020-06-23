@@ -5,7 +5,7 @@ import random
 # this is a basic implementation fo k_means algorithm
 
 class KMeans():
-    def __init__(self, k=2, max_iter=10, tol = 0.001):
+    def __init__(self, k=2, max_iter=10, tol = 0.00001):
         self.k = k
         self.tol = tol
         self.max_iter = max_iter
@@ -19,18 +19,19 @@ class KMeans():
         classification = []
 
         for entry in train_data:
-            # le voy a asignar cualquier resultado, enfermo o no enfermo, a cada entrada del clasificador
+            # we assign 1 or 0 randomly to each entry of the classificator
             label = random.choice(list(labels))
             classification.append((entry, label))
 
-        # interate util convergance or max iterations
         iteration = 0
         # until there is no condition satisfied, we keep going
-        # if the two classifications are the same, we are done, otherwise we keep
-        # on going until the amount of iterations are satisfied
+        ### if the two classifications are the same, we are done, otherwise we keep
+        ### on going until the amount of iterations are satisfied
         prev_classification = None
-        while not self.converge(prev_classification, classification) and iteration < self.max_iter:
-        # while not self._check_tol and iteration < self.max_iter:
+        # while not self.converge(prev_classification, classification) and iteration < self.max_iter:
+        # while iteration < self.max_iter:
+        while not self._check_tol(prev_classification, classification) and iteration < self.max_iter:
+
             prev_classification = classification.copy()
             classification = []
 
@@ -38,7 +39,7 @@ class KMeans():
                 centroid = self.get_centroid(prev_classification, label)
                 self.centroids.append((label, centroid))
             for v in train_data:
-                new_label = self.distance(v, self.centroids)
+                new_label = self.euclidean_distance(v, self.centroids)
                 classification.append((v, new_label))
             iteration += 1
 
@@ -46,7 +47,7 @@ class KMeans():
     def predict(self, data):
         predictions = []
         for entry in data:
-            pred = self.distance(entry, self.centroids)
+            pred = self.euclidean_distance(entry, self.centroids)
             predictions.append(pred)
 
         return np.array(predictions)
@@ -68,7 +69,7 @@ class KMeans():
             centroid /= count
         return centroid
 
-    def distance(self, entry, centroids):
+    def euclidean_distance(self, entry, centroids):
         # euclidean distance calculation
         # numpy norm is l2
         distances = []
@@ -78,8 +79,26 @@ class KMeans():
         min_tuple = min(distances, key = lambda t: t[0])
         return min_tuple[1]
 
+    def _check_tol(self, prev_classification, new_classification):
+        prev = 0
+        new = 0
+
+        if prev_classification == None or new_classification == None:
+            return False
+
+        for i in range(len(prev_classification)):
+            prev += prev_classification[i][1]
+        for i in range(len(new_classification)):
+            new += new_classification[i][1]
+        result = abs((new - prev) / len(prev_classification))
+        if result < self.tol:
+            return True
+
+        return False
+
     def converge(self, prev_classification, new_classification):
         #check classifications
+        print("coverage")
 
         if prev_classification == None or new_classification == None:
             return False
@@ -92,18 +111,6 @@ class KMeans():
 
         return True
 
-    def _check_tol(self, prev_classification, new_classification):
-        prev = 0
-        new = 0
-        for i in range(len(prev_classification)):
-            prev += prev_classification[i][1]
-        for i in range(len(new_classification)):
-            new += new_classification[i][1]
-        result = (new - prev) / len(prev_classification)
 
-        if result < self.tol:
-            return True
-
-        return False
 
 
