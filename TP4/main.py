@@ -73,8 +73,8 @@ logistic_training('d', train_data, test_data, train_labels, test_labels)
 
 def print_unsupervised_confusion_matrix(title, classifiedExamples, actual):
     
-    TP = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 0])
-    TN = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 1])
+    TP = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 1])
+    TN = len([True for index, x in enumerate(classifiedExamples) if classifiedExamples[index] == actual[index] and classifiedExamples[index] == 0])
     FP = len([True for index, x in enumerate(classifiedExamples) if actual[index] == 0 and classifiedExamples[index] == 1])
     FN = len([True for index, x in enumerate(classifiedExamples) if actual[index] == 1 and classifiedExamples[index] == 0])
 
@@ -92,7 +92,7 @@ train_data, test_data, train_labels, test_labels = train_test_split(data1, label
 ## KMeans
 ##########################
 
-model = KMeans(34)
+model = KMeans(2)
 model.fit(train_data, train_labels)
 
 classifiedExamples = model.predict(train_data)
