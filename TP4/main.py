@@ -14,7 +14,6 @@ from algorithms.kohonenNet import KohonenNetwork
 # https://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
 
 
-
 def logistic_training(ex, train_data, test_data, train_labels, test_labels):
     # trainig Logistic taken from sklearn.linear_model
     model = LogisticRegression(n_jobs=3, C=0.3);
@@ -39,8 +38,10 @@ file_data = fill_data(file_data)
 data = file_data[['age', 'cad.dur', 'choleste']]
 label = file_data['sigdz'].to_list()
 
+#normalize data
 # normalize data
-data = normalize_data(data)
+
+# data = normalize_data(data)
 data = data.to_numpy()
 
 from sklearn.model_selection import train_test_split
@@ -80,12 +81,15 @@ def print_unsupervised_confusion_matrix(title, classifiedExamples, actual):
 
     print(f"{title}:\n\tAc/Pr\tN\tP\n\tN\t\t{TN}\t{FP}\n\tP\t\t{FN}\t{TP}\n\n")
 
+    # Precision = TP / (TP + FP)
+    print("Precision. TP/(TP + FP)=" + str(TP/(TP+FP)))
+
 data = file_data[['age', 'choleste', 'cad.dur']]
 scaler = StandardScaler()
 data1 = pd.DataFrame(scaler.fit_transform(data), index=data.index, columns=data.columns)
 data1 = data1.to_numpy()
 
-train_percentage = 0.01
+train_percentage = 0.40
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
 
 ##########################
