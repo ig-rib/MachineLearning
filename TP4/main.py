@@ -82,25 +82,51 @@ def print_unsupervised_confusion_matrix(title, classifiedExamples, actual):
     print(f"{title}:\n\tAc/Pr\tN\tP\n\tN\t\t{TN}\t{FP}\n\tP\t\t{FN}\t{TP}\n\n")
 
     # Precision = TP / (TP + FP)
-    print("Precision. TP/(TP + FP)=" + str(TP/(TP+FP)))
+    if TP!=0 and FP!=0:
+        print("Precision. TP/(TP + FP)=" + str(TP/(TP+FP)))
 
 data = file_data[['age', 'choleste', 'cad.dur']]
 scaler = StandardScaler()
 data1 = pd.DataFrame(scaler.fit_transform(data), index=data.index, columns=data.columns)
 data1 = data1.to_numpy()
 
-train_percentage = 0.40
+train_percentage = 0.80
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
 
 ##########################
 ## KMeans
 ##########################
 
-model = KMeans(2)
+model = KMeans(5)
 model.fit(train_data, train_labels)
 
-classifiedExamples = model.predict(train_data)
-print_unsupervised_confusion_matrix('Kmeans', classifiedExamples, train_labels)
+classifiedExamples = model.predict(test_data)
+print_unsupervised_confusion_matrix('Kmeans', classifiedExamples, test_labels)
+
+
+##########################
+## Kohonen
+##########################
+
+kn = KohonenNetwork(len(train_data[0]), 4, D=train_data)
+
+classZeroNodes = [train_data[i] for i, data in enumerate(train_data) if train_labels[i] == 0]
+classOneNodes = [train_data[i] for i, data in enumerate(train_data) if train_labels[i] == 1]
+
+kn.W = np.asmatrix([
+    classZeroNodes[0],
+    classZeroNodes[1],
+    classOneNodes[0],
+    classOneNodes[1]
+])
+
+kn.train(np.matrix(train_data), 25000, R=1)
+
+
+# classifiedExamples = ['A' if kn.getClass(train_data[i])[0] == 0 else 'B' for i in range(len(train_data))]
+classifiedExamples = [kn.getClass(train_data[i])[0] for i in range(len(train_data))]
+
+print_unsupervised_confusion_matrix('Kohonen Nets - Simplified', classifiedExamples, train_labels)
 
 ###########################
 ### Hierarchical Clustering
@@ -128,27 +154,4 @@ classifiedExamples[:] = [classification[x] for x in classifiedExamples]
 
 print_unsupervised_confusion_matrix('Hierarchical Clustering', classifiedExamples, train_labels)
 
-##########################
-## Kohonen
-##########################
-
-kn = KohonenNetwork(len(train_data[0]), 4, D=train_data)
-
-classZeroNodes = [train_data[i] for i, data in enumerate(train_data) if train_labels[i] == 0]
-classOneNodes = [train_data[i] for i, data in enumerate(train_data) if train_labels[i] == 1]
-
-kn.W = np.asmatrix([
-    classZeroNodes[0],
-    classZeroNodes[1],
-    classOneNodes[0],
-    classOneNodes[1]
-])
-
-kn.train(np.matrix(train_data), 25000, R=1)
-
-
-# classifiedExamples = ['A' if kn.getClass(train_data[i])[0] == 0 else 'B' for i in range(len(train_data))]
-classifiedExamples = [kn.getClass(train_data[i])[0] for i in range(len(train_data))]
-
-print_unsupervised_confusion_matrix('Kohonen Nets - Simplified', classifiedExamples, train_labels)
 

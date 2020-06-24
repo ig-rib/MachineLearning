@@ -5,21 +5,22 @@ import random
 # this is a basic implementation fo k_means algorithm
 
 class KMeans():
-    def __init__(self, k=2, max_iter=10, tol = 0.00001):
+    def __init__(self, k=2, max_iter=25000, tol = 0.00001):
         self.k = k
         self.tol = tol
         self.max_iter = max_iter
 
-    def fit(self, train_data, train_labels):
+    def fit(self, train_data, train_labels=None):
 
         # {0, 1} - Enfermo y no enfermo
-        labels = set(train_labels)
+        # labels = set(train_labels)
+        labels = [i for i in range(self.k)]
         self.space_dim = train_data.shape[1]
         self.centroids = []
         classification = []
 
         for entry in train_data:
-            # we assign 1 or 0 randomly to each entry of the classificator
+            # we assign labels randomly to each entry of the classificator
             label = random.choice(list(labels))
             classification.append((entry, label))
 
