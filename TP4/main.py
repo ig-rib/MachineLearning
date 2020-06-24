@@ -16,6 +16,8 @@ from algorithms.kohonenNet import KohonenNetwork
 
 def logistic_training(ex, train_data, test_data, train_labels, test_labels):
     # trainig Logistic taken from sklearn.linear_model
+    # C => smaller values, stronger regularization
+    # n_jobs = Number of CPU cores used when parallelizing over classes
     model = LogisticRegression(n_jobs=3, C=0.3);
     model.fit(train_data, train_labels)
     coefficients = model.coef_
@@ -38,7 +40,7 @@ file_data = fill_data(file_data)
 data = file_data[['age', 'cad.dur', 'choleste']]
 label = file_data['sigdz'].to_list()
 
-#normalize data
+# normalize data
 # normalize data
 
 # data = normalize_data(data)
@@ -90,7 +92,7 @@ scaler = StandardScaler()
 data1 = pd.DataFrame(scaler.fit_transform(data), index=data.index, columns=data.columns)
 data1 = data1.to_numpy()
 
-train_percentage = 0.80
+train_percentage = 0.40
 train_data, test_data, train_labels, test_labels = train_test_split(data1, label, train_size=train_percentage)
 
 ##########################
@@ -98,7 +100,7 @@ train_data, test_data, train_labels, test_labels = train_test_split(data1, label
 ##########################
 
 model = KMeans(5)
-model.fit(train_data, train_labels)
+model.fit(train_data)
 
 classifiedExamples = model.predict(test_data)
 print_unsupervised_confusion_matrix('Kmeans', classifiedExamples, test_labels)

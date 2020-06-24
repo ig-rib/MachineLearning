@@ -14,6 +14,10 @@ class KMeans():
 
         # {0, 1} - Enfermo y no enfermo
         # labels = set(train_labels)
+        # 1. Asignar aleatoriamente 1 a K a cada una de las obs
+        # 2.
+            # calcular centroide
+            # asignar centroide al cluster cuyo centroide este mas cerca por distancia euclidea
         labels = [i for i in range(self.k)]
         self.space_dim = train_data.shape[1]
         self.centroids = []
@@ -33,6 +37,10 @@ class KMeans():
 
             prev_classification = classification.copy()
             classification = []
+
+            # 2.
+            # calcular centroide
+            # asignar centroide al cluster cuyo centroide este mas cerca por distancia euclidea
 
             for label in labels:
                 centroid = self.get_centroid(prev_classification, label)

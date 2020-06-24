@@ -37,6 +37,7 @@ def plot_confusion_matrix_bis(title, train, predictions, test_data, test_labels,
 def fill_data(fill):
     # fill values that are Nan
     d = fill.sort_values(by=['age'])
+    # forward fill (ffill) method.
     d.fillna(inplace=True, method='ffill')
     return d;
 
@@ -44,5 +45,6 @@ def fill_data(fill):
 def normalize_data(d):
     aux = d.values;
     s = preprocessing.MinMaxScaler();
+    # Fits transformer to X and y with optional parameters fit_params and returns a transformed version of X.
     x = s.fit_transform(aux);
     return pd.DataFrame(x);
